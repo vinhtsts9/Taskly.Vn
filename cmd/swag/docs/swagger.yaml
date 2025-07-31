@@ -1,0 +1,604 @@
+basePath: /v1/2024
+definitions:
+  model.AddPermissionToRoleInput:
+    type: object
+  model.AddRoleToUserInput:
+    type: object
+  model.CheckUserPermissionInput:
+    type: object
+  model.CreatePermissionInput:
+    type: object
+  model.CreatePostInput:
+    properties:
+      content:
+        description: JSON content in string format
+      is_published:
+        type: boolean
+      metadata:
+        description: JSON metadata in string format
+        type: string
+      title:
+        type: string
+      user_id:
+        type: integer
+    type: object
+  model.CreateRoleInput:
+    type: object
+  model.CreateRoom:
+    properties:
+      admin_id:
+        type: integer
+      avatar_url:
+        type: string
+      is_group:
+        type: boolean
+      name:
+        type: string
+    type: object
+  model.LoginInput:
+    properties:
+      user_account:
+        type: string
+      user_password:
+        type: string
+    type: object
+  model.RegisterInput:
+    properties:
+      verify_key:
+        type: string
+      verify_purpose:
+        type: string
+      verify_type:
+        type: integer
+    type: object
+  model.RemovePermissionFromRoleInput:
+    type: object
+  model.RemoveRoleFromUserInput:
+    type: object
+  model.SetupTwoFactorAuthInput:
+    properties:
+      two_factor_auth_type:
+        type: string
+      two_factor_email:
+        type: string
+      user_id:
+        type: integer
+    type: object
+  model.UpdatePasswordRegisterInput:
+    properties:
+      user_password:
+        type: string
+      user_token:
+        type: string
+    type: object
+  model.UpdatePostInput:
+    properties:
+      content:
+        description: JSON content in string format
+      id:
+        type: integer
+      is_published:
+        type: boolean
+      metadata:
+        description: JSON metadata in string format
+        type: string
+      title:
+        type: string
+      user_id:
+        type: integer
+    type: object
+  model.VerifyInput:
+    properties:
+      verify_code:
+        type: string
+      verify_key:
+        type: string
+    type: object
+  response.ErrorResponseData:
+    properties:
+      code:
+        type: integer
+      detail: {}
+      error:
+        type: string
+    type: object
+  response.ResponseData:
+    properties:
+      code:
+        type: integer
+      data: {}
+      message:
+        type: string
+    type: object
+host: localhost:8080
+info:
+  contact:
+    email: vinhtiensinh17@gmail.com
+    name: Team go
+    url: github.com/Vinhts/GO-MAIN
+  description: This is a sample server celler server.
+  license:
+    name: Apache 2.0
+    url: http://www.apache.org/licenses/LICENSE-2.0.html
+  termsOfService: github.com/Vinhts/GO-MAIN
+  title: API Documentation Ecommerce Backend Shopdevgo
+  version: 1.0.0
+paths:
+  /chat/createRoom:
+    post:
+      consumes:
+      - application/json
+      description: Create a new room for the user
+      parameters:
+      - description: CreateRoom Payload
+        in: body
+        name: payload
+        required: true
+        schema:
+          $ref: '#/definitions/model.CreateRoom'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/response.ResponseData'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/response.ErrorResponseData'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/response.ErrorResponseData'
+      security:
+      - BearerAuth: []
+      summary: Create a new room
+      tags:
+      - chat management
+  /comment/{id}/{post_id}:
+    delete:
+      consumes:
+      - application/json
+      description: Delete comment for the user
+      parameters:
+      - description: Id
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: PostId
+        in: path
+        name: post_id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/response.ResponseData'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/response.ErrorResponseData'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/response.ErrorResponseData'
+      summary: Delete comment
+      tags:
+      - comment management
+  /post/{id}:
+    delete:
+      consumes:
+      - application/json
+      description: Delete a post by its ID
+      parameters:
+      - description: Post ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: No Content
+          schema:
+            $ref: '#/definitions/response.ResponseData'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/response.ErrorResponseData'
+      summary: Delete a post
+      tags:
+      - post management
+    patch:
+      consumes:
+      - application/json
+      description: Update a post by its ID
+      parameters:
+      - description: Post ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Updated Post Data
+        in: body
+        name: payload
+        required: true
+        schema:
+          $ref: '#/definitions/model.UpdatePostInput'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.ResponseData'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/response.ErrorResponseData'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/response.ErrorResponseData'
+      summary: Update a post
+      tags:
+      - post management
+  /post/create:
+    post:
+      consumes:
+      - application/json
+      description: Create a new post for the user
+      parameters:
+      - description: Post Payload
+        in: body
+        name: payload
+        required: true
+        schema:
+          $ref: '#/definitions/model.CreatePostInput'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/response.ResponseData'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/response.ErrorResponseData'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/response.ErrorResponseData'
+      summary: Create a new post
+      tags:
+      - post management
+  /rbac/add_permission_to_role:
+    post:
+      consumes:
+      - application/json
+      description: Assign permission to a role
+      parameters:
+      - description: payload
+        in: body
+        name: payload
+        required: true
+        schema:
+          $ref: '#/definitions/model.AddPermissionToRoleInput'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.ResponseData'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/response.ErrorResponseData'
+      summary: Add Permission to Role
+      tags:
+      - RBAC management
+  /rbac/add_role_to_user:
+    post:
+      consumes:
+      - application/json
+      description: Assign a role to a user
+      parameters:
+      - description: payload
+        in: body
+        name: payload
+        required: true
+        schema:
+          $ref: '#/definitions/model.AddRoleToUserInput'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.ResponseData'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/response.ErrorResponseData'
+      summary: Add Role to User
+      tags:
+      - RBAC management
+  /rbac/check_user_permission:
+    post:
+      consumes:
+      - application/json
+      description: Check if a user has a specific permission
+      parameters:
+      - description: payload
+        in: body
+        name: payload
+        required: true
+        schema:
+          $ref: '#/definitions/model.CheckUserPermissionInput'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.ResponseData'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/response.ErrorResponseData'
+      summary: Check User Permission
+      tags:
+      - RBAC management
+  /rbac/create_permission:
+    post:
+      consumes:
+      - application/json
+      description: Create a new permission
+      parameters:
+      - description: payload
+        in: body
+        name: payload
+        required: true
+        schema:
+          $ref: '#/definitions/model.CreatePermissionInput'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.ResponseData'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/response.ErrorResponseData'
+      summary: Create Permission
+      tags:
+      - RBAC management
+  /rbac/create_role:
+    post:
+      consumes:
+      - application/json
+      description: Create a new role
+      parameters:
+      - description: payload
+        in: body
+        name: payload
+        required: true
+        schema:
+          $ref: '#/definitions/model.CreateRoleInput'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.ResponseData'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/response.ErrorResponseData'
+      summary: Create Role
+      tags:
+      - RBAC management
+  /rbac/remove_permission_from_role:
+    post:
+      consumes:
+      - application/json
+      description: Remove permission from a role
+      parameters:
+      - description: payload
+        in: body
+        name: payload
+        required: true
+        schema:
+          $ref: '#/definitions/model.RemovePermissionFromRoleInput'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.ResponseData'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/response.ErrorResponseData'
+      summary: Remove Permission from Role
+      tags:
+      - RBAC management
+  /rbac/remove_role_from_user:
+    post:
+      consumes:
+      - application/json
+      description: Remove a role from a user
+      parameters:
+      - description: payload
+        in: body
+        name: payload
+        required: true
+        schema:
+          $ref: '#/definitions/model.RemoveRoleFromUserInput'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.ResponseData'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/response.ErrorResponseData'
+      summary: Remove Role from User
+      tags:
+      - RBAC management
+  /user/login:
+    post:
+      consumes:
+      - application/json
+      description: User Login
+      parameters:
+      - description: payload
+        in: body
+        name: payload
+        required: true
+        schema:
+          $ref: '#/definitions/model.LoginInput'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.ResponseData'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/response.ErrorResponseData'
+      summary: User Login
+      tags:
+      - accounts management
+  /user/register:
+    post:
+      consumes:
+      - application/json
+      description: When user is registered send otp to email
+      parameters:
+      - description: payload
+        in: body
+        name: payload
+        required: true
+        schema:
+          $ref: '#/definitions/model.RegisterInput'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.ResponseData'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/response.ErrorResponseData'
+      summary: User Registration
+      tags:
+      - accounts management
+  /user/two-factor/setup:
+    post:
+      consumes:
+      - application/json
+      description: User Setup Two Factor Authentication
+      parameters:
+      - description: Authorization token
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      - description: payload
+        in: body
+        name: payload
+        required: true
+        schema:
+          $ref: '#/definitions/model.SetupTwoFactorAuthInput'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.ResponseData'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/response.ErrorResponseData'
+      summary: User Setup Two Factor Authentication
+      tags:
+      - account 2fa
+  /user/update_pass_register:
+    post:
+      consumes:
+      - application/json
+      description: UpdatePasswordRegister
+      parameters:
+      - description: payload
+        in: body
+        name: payload
+        required: true
+        schema:
+          $ref: '#/definitions/model.UpdatePasswordRegisterInput'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.ResponseData'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/response.ErrorResponseData'
+      summary: UpdatePasswordRegister
+      tags:
+      - accounts management
+  /user/verify_account:
+    post:
+      consumes:
+      - application/json
+      description: Verify OTP Login By User
+      parameters:
+      - description: payload
+        in: body
+        name: payload
+        required: true
+        schema:
+          $ref: '#/definitions/model.VerifyInput'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.ResponseData'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/response.ErrorResponseData'
+      summary: Verify OTP Login By User
+      tags:
+      - accounts management
+securityDefinitions:
+  BearerAuth:
+    in: header
+    name: Authorization
+    type: apiKey
+swagger: "2.0"

@@ -1,0 +1,16 @@
+{
+  "mappings": {
+    "properties": {
+      "id": { "type": "keyword" },
+      "user_id": { "type": "keyword" },
+      "title": { "type": "text" },
+      "description": { "type": "text" },
+      "category_id": { "type": "integer" },
+      "price": { "type": "float" },
+      "delivery_time": { "type": "integer" },
+      "image_url": { "type": "keyword" },
+      "status": { "type": "keyword" },
+      "created_at": { "type": "date" }
+    }
+  }
+}
