@@ -1,0 +1,148 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:17
+    container_name: taskly-postgres
+    restart: unless-stopped
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: 123456
+      POSTGRES_DB: test
+    command:
+      - "postgres"
+      - "-c"
+      - "wal_level=logical"
+      - "-c"
+      - "max_replication_slots=10"
+      - "-c"
+      - "max_wal_senders=10"
+    volumes:
+      - pgdata-taskly:/var/lib/postgresql/data
+    networks:
+      - taskly-network
+
+  elasticsearch:
+    image: elasticsearch:7.17.25
+    container_name: taskly-elasticsearch
+    restart: unless-stopped
+    ports:
+      - "9200:9200"
+      - "9300:9300"
+    environment:
+      - discovery.type=single-node
+    volumes:
+      - esdata-taskly:/usr/share/elasticsearch/data
+    networks:
+      - taskly-network
+  kafka:
+    image: quay.io/debezium/kafka:2.7
+    container_name: taskly-kafka
+    ports:
+     - 9092:9092
+     - 29092:29092
+    links:
+     - zookeeper
+    depends_on:
+     - zookeeper
+    environment:
+      KAFKA_BROKER_ID: 1
+      ZOOKEEPER_CONNECT: zookeeper:2181
+      KAFKA_LISTENERS: INTERNAL://:29092,EXTERNAL://:9092
+      KAFKA_ADVERTISED_LISTENERS: INTERNAL://kafka:29092,EXTERNAL://localhost:9092
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: INTERNAL:PLAINTEXT,EXTERNAL:PLAINTEXT
+      KAFKA_INTER_BROKER_LISTENER_NAME: INTERNAL
+    networks:
+      - taskly-network
+  redis:
+    image: redis
+    container_name: taskly-redis
+    ports:
+      - 6379:6379
+    networks:
+      - taskly-network
+    volumes:
+      - redis_data-taskly:/data
+  zookeeper:
+    image: quay.io/debezium/zookeeper:2.7
+    container_name: taskly-zookeeper
+    ports:
+     - 22181:2181
+    networks:
+     - taskly-network
+
+  kafka-ui:
+    image: provectuslabs/kafka-ui:latest
+    container_name: taskly-kafka-ui
+    environment:
+      KAFKA_CLUSTERS_0_NAME: local
+      KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS: kafka:29092
+    ports:
+      - "9089:8080"
+    links:
+      - kafka
+    depends_on:
+      - kafka
+    networks:
+      - taskly-network
+
+  connect:
+    image: quay.io/debezium/connect:2.7
+    container_name: taskly-connect
+    ports:
+     - 8083:8083
+    links:
+     - kafka
+    depends_on:
+     - kafka
+    volumes:
+     - ./environment/plugins/es:/kafka/connect/plugins/es #chứa connector của elasticsearch
+     - ./environment/plugins/pg:/kafka/connect/plugins/pg #chứa connector của mysql
+
+    environment:
+     - CONNECT_PLUGIN_PATH=/kafka/connect/plugins/es,/kafka/connect/plugins/pg
+     - BOOTSTRAP_SERVERS=kafka:29092
+     - GROUP_ID=1
+     - CONFIG_STORAGE_TOPIC=my_connect_configs
+     - OFFSET_STORAGE_TOPIC=my_connect_offsets
+     - STATUS_STORAGE_TOPIC=my_connect_statuses
+     - DATABASE_HOSTNAME=postgres  
+     - DATABASE_PORT=5432
+     - DATABASE_USER=postgres
+     - DATABASE_PASSWORD=123456
+     - DATABASE_NAME=test
+    networks:
+     - taskly-network
+
+  # THÊM SERVICE CHO ỨNG DỤNG GO (MÔI TRƯỜNG PHÁT TRIỂN)
+  go-app-dev:
+    build:
+      context: .
+      dockerfile: Dockerfile.dev # SỬ DỤNG DOCKERFILE.DEV
+    container_name: taskly-go-app-dev
+    restart: no # Không tự động restart trong dev
+    ports:
+      - "8080:8080"
+    volumes:
+      - .:/app # <-- MOUNT CODE: Thư mục hiện tại của host vào /app trong container
+      - go-mod-cache:/go/pkg/mod # Cache go modules để tăng tốc rebuild trong container (nếu có)
+    working_dir: /app
+    depends_on:
+      - postgres
+      - redis
+      - kafka # Nếu app Go của bạn tương tác với Kafka
+      - elasticsearch # Nếu app Go của bạn tương tác với Elasticsearch
+    networks:
+      - taskly-network
+
+networks:
+  taskly-network:
+    external: true
+
+volumes:
+  pgdata-taskly:
+  esdata-taskly:
+  redis_data-taskly:
+  go-mod-cache:

@@ -1,0 +1,6 @@
+p, alice, /v1/2024/rbac/data1, GET
+p, bob, /v1/2024/rbac/data2, POST
+p, "1", /v1/2024/chat/get_member/:room_id, GET
+p, "1", /v1/2024/chat/delete_member/:room_id/:user_id, DELETE
+p, 3, /v1/2024/chat/get_member/1, GET
+g, "1", adminChat

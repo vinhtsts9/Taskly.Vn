@@ -1,0 +1,28 @@
+
+{
+  "name": "gigs-postgres-connector",
+  "config": {
+    "connector.class": "io.debezium.connector.postgresql.PostgresConnector",
+    "plugin.name": "pgoutput",
+    "tasks.max": "1",
+    "database.hostname": "taskly-postgres",             
+    "database.port": "5432",
+    "database.user": "postgres",
+    "database.password": "123456",
+    "database.dbname": "test",                        
+    "database.server.name": "dbserver1",              
+    "table.include.list": "public.gigs",              
+    "slot.name": "gigs_slot",                         
+    "publication.name": "gigs_publication",           
+    "tombstones.on.delete": "false",
+    
+    "transforms": "TimestampConverter",
+    "transforms.TimestampConverter.type": "org.apache.kafka.connect.transforms.TimestampConverter$Value",
+    "transforms.TimestampConverter.target.type": "string",
+    "transforms.TimestampConverter.field": "created_at",
+    "transforms.TimestampConverter.format": "yyyy-MM-dd'T'HH:mm:ss'Z'",
+    
+    "schema.history.internal.kafka.bootstrap.servers": "demo_kafka:29092",
+    "schema.history.internal.kafka.topic": "schema-changes.test"
+  }
+}
