@@ -1,0 +1,133 @@
+.auth-page {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  background-color: var(--light-gray);
+  font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+}
+
+.auth-form-container {
+  width: 100%;
+  max-width: 420px;
+  padding: 40px;
+  background-color: white;
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  box-shadow: 0 6px 20px rgba(0,0,0,0.07);
+}
+
+.auth-form-container h1 {
+  text-align: center;
+  font-size: 2rem;
+  margin-bottom: 30px;
+  color: var(--primary-color);
+}
+
+.auth-form-container form {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.auth-form-container label {
+  font-weight: 600;
+  color: var(--text-color);
+  margin-bottom: -10px;
+}
+
+.auth-form-container input {
+  padding: 14px;
+  border: 1px solid var(--border-color);
+  border-radius: 4px;
+  font-size: 1rem;
+}
+
+.auth-form-container input:focus {
+  outline: none;
+  border-color: var(--accent-color);
+  box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.15);
+}
+
+.auth-button {
+  background-color: var(--accent-color);
+  color: white;
+  border: none;
+  padding: 14px;
+  font-size: 1rem;
+  font-weight: 700;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background-color 0.2s ease-in-out;
+}
+
+.auth-button:hover {
+  background-color: #0056b3;
+}
+
+.auth-button:disabled {
+  background-color: #a9b2c2;
+  cursor: not-allowed;
+}
+
+.form-footer {
+  text-align: center;
+  margin-top: 25px;
+  font-size: 0.9rem;
+  color: var(--text-color);
+}
+
+.form-footer a {
+  color: var(--accent-color);
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.form-footer a:hover {
+  text-decoration: underline;
+}
+
+.error-message {
+  background-color: #ffebee;
+  color: #c62828;
+  border: 1px solid #ef9a9a;
+  padding: 15px;
+  border-radius: 4px;
+  margin-bottom: 20px;
+  text-align: center;
+  white-space: pre-wrap; /* Giữ định dạng cho JSON */
+}
+
+/* Thêm CSS cho các nút chọn Email/Phone */
+.verify-type-selector {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 1rem;
+}
+
+.verify-type-selector button {
+  background: none;
+  border: 2px solid var(--border-color);
+  padding: 0.5rem 1rem;
+  flex: 1;
+  cursor: pointer;
+  font-size: 0.9rem;
+  color: var(--text-color);
+  transition: all 0.2s;
+}
+
+.verify-type-selector button:first-child {
+  border-radius: 4px 0 0 4px;
+  border-right: 1px solid var(--border-color);
+}
+
+.verify-type-selector button:last-child {
+  border-radius: 0 4px 4px 0;
+  border-left: 1px solid var(--border-color);
+}
+
+.verify-type-selector button.active {
+  background-color: var(--accent-color);
+  color: white;
+  border-color: var(--accent-color);
+} 

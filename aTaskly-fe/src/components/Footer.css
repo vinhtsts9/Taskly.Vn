@@ -1,0 +1,77 @@
+/* src/components/Footer.css */
+.site-footer {
+  background-color: var(--primary-color);
+  color: white;
+  padding: 3rem 2rem;
+  margin-top: 2rem;
+}
+
+.footer-columns {
+  display: flex;
+  justify-content: space-between;
+  max-width: 1200px;
+  margin: 0 auto 2rem auto;
+  flex-wrap: wrap;
+  gap: 2rem;
+}
+
+.footer-column {
+  flex: 1;
+  min-width: 180px;
+}
+
+.footer-column h3 {
+  font-size: 1rem;
+  margin-bottom: 1rem;
+  color: white;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.footer-column ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.footer-column li {
+  margin-bottom: 0.5rem;
+}
+
+.footer-column a {
+  color: #a9b2c2; /* Màu xám nhạt hơn cho link */
+  text-decoration: none;
+  transition: color 0.3s;
+}
+
+.footer-column a:hover {
+  color: white;
+  text-decoration: underline;
+}
+
+.footer-bottom {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding-top: 2rem;
+  border-top: 1px solid #3A536E; /* Đường kẻ phân cách */
+}
+
+.footer-logo span {
+  font-size: 1.8rem;
+  font-weight: bold;
+}
+
+.footer-logo p {
+  margin: 0.5rem 0 0;
+  font-size: 0.8rem;
+  color: #a9b2c2;
+}
+
+.footer-social span {
+  font-size: 1.2rem;
+  color: white;
+  /* Thêm các icon social thực tế sau */
+} 

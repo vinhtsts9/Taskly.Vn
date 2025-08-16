@@ -1,0 +1,35 @@
+/* src/components/ServiceCard.css */
+.service-card {
+  width: 250px;
+  color: white;
+  cursor: pointer;
+  border-radius: 4px;
+  overflow: hidden;
+  position: relative;
+}
+
+.card-image-placeholder {
+  height: 320px;
+  background: linear-gradient(135deg, #2a4ae4, #a82ee4); /* Placeholder gradient */
+}
+
+.card-content {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  padding: 16px;
+  width: 100%;
+  box-sizing: border-box;
+  background: linear-gradient(to top, rgba(0,0,0,0.7), transparent);
+}
+
+.card-content h3 {
+  font-size: 0.9rem;
+  font-weight: 300;
+  margin: 0;
+}
+
+.card-content h2 {
+  font-size: 1.5rem;
+  margin: 4px 0 0 0;
+} 
