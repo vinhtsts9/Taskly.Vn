@@ -11,6 +11,7 @@ import (
 	"time"
 
 	"github.com/google/uuid"
+	"github.com/sqlc-dev/pqtype"
 )
 
 type VerifyTypeEnum string
@@ -55,9 +56,20 @@ func (ns NullVerifyTypeEnum) Value() (driver.Value, error) {
 	return string(ns.VerifyTypeEnum), nil
 }
 
+type Answer struct {
+	ID         uuid.UUID
+	GigID      uuid.UUID
+	UserID     uuid.UUID
+	QuestionID uuid.UUID
+	Answer     string
+	CreatedAt  time.Time
+	UpdatedAt  time.Time
+}
+
 type Category struct {
-	ID   int32
-	Name string
+	ID       int32
+	Name     string
+	ParentID sql.NullInt32
 }
 
 type Dispute struct {
@@ -70,16 +82,32 @@ type Dispute struct {
 }
 
 type Gig struct {
+	ID          uuid.UUID
+	UserID      uuid.UUID
+	Title       string
+	Status      string
+	CreatedAt   time.Time
+	CategoryID  []int32
+	ImageUrl    []string
+	UpdatedAt   time.Time
+	Description string
+	PricingMode string
+}
+
+type GigPackage struct {
 	ID           uuid.UUID
-	UserID       uuid.UUID
-	Title        string
-	Description  string
-	CategoryID   int32
+	GigID        uuid.UUID
+	Tier         string
 	Price        float64
 	DeliveryTime int32
-	ImageUrl     sql.NullString
-	Status       string
-	CreatedAt    time.Time
+	Options      pqtype.NullRawMessage
+}
+
+type GigRequirement struct {
+	ID       uuid.UUID
+	GigID    uuid.UUID
+	Question string
+	Required bool
 }
 
 type Message struct {
@@ -112,7 +140,7 @@ type Order struct {
 }
 
 type Permission struct {
-	ID        int32
+	ID        uuid.UUID
 	Name      string
 	Resource  string
 	Action    string
@@ -130,15 +158,15 @@ type Review struct {
 }
 
 type Role struct {
-	ID        int32
-	Name      string
+	ID        uuid.UUID
+	RoleName  string
 	CreatedAt time.Time
 	UpdatedAt time.Time
 }
 
 type RolePermission struct {
-	RoleID       int32
-	PermissionID int32
+	RoleID       uuid.UUID
+	PermissionID uuid.UUID
 }
 
 type Room struct {
@@ -152,7 +180,6 @@ type User struct {
 	ID         uuid.UUID
 	UserBaseID uuid.UUID
 	Names      string
-	UserType   string
 	ProfilePic sql.NullString
 	Bio        sql.NullString
 	CreatedAt  time.Time
@@ -176,7 +203,7 @@ type UserBase struct {
 
 type UserRole struct {
 	UserID    uuid.UUID
-	RoleID    int32
+	RoleID    uuid.UUID
 	CreatedAt time.Time
 }
 

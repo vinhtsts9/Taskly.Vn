@@ -17,8 +17,8 @@ VALUES ($1, $2)
 `
 
 type AddPermissionToRoleParams struct {
-	RoleID       int32
-	PermissionID int32
+	RoleID       uuid.UUID
+	PermissionID uuid.UUID
 }
 
 func (q *Queries) AddPermissionToRole(ctx context.Context, arg AddPermissionToRoleParams) error {
@@ -33,7 +33,7 @@ VALUES ($1, $2)
 
 type AddRoleToUserParams struct {
 	UserID uuid.UUID
-	RoleID int32
+	RoleID uuid.UUID
 }
 
 func (q *Queries) AddRoleToUser(ctx context.Context, arg AddRoleToUserParams) error {
@@ -68,17 +68,17 @@ func (q *Queries) CreatePermission(ctx context.Context, arg CreatePermissionPara
 }
 
 const createRole = `-- name: CreateRole :one
-INSERT INTO roles (name)
+INSERT INTO roles (role_name)
 VALUES ($1)
-RETURNING id, name, created_at, updated_at
+RETURNING id, role_name, created_at, updated_at
 `
 
-func (q *Queries) CreateRole(ctx context.Context, name string) (Role, error) {
-	row := q.db.QueryRowContext(ctx, createRole, name)
+func (q *Queries) CreateRole(ctx context.Context, roleName string) (Role, error) {
+	row := q.db.QueryRowContext(ctx, createRole, roleName)
 	var i Role
 	err := row.Scan(
 		&i.ID,
-		&i.Name,
+		&i.RoleName,
 		&i.CreatedAt,
 		&i.UpdatedAt,
 	)
@@ -92,7 +92,7 @@ JOIN role_permissions rp ON p.id = rp.permission_id
 WHERE rp.role_id = $1
 `
 
-func (q *Queries) GetPermissionsByRoleID(ctx context.Context, roleID int32) ([]Permission, error) {
+func (q *Queries) GetPermissionsByRoleID(ctx context.Context, roleID uuid.UUID) ([]Permission, error) {
 	rows, err := q.db.QueryContext(ctx, getPermissionsByRoleID, roleID)
 	if err != nil {
 		return nil, err
@@ -160,25 +160,19 @@ func (q *Queries) GetPermissionsByUserID(ctx context.Context, userID uuid.UUID) 
 	return items, nil
 }
 
-const getRoleByName = `-- name: GetRoleByName :one
-SELECT id, name, created_at, updated_at FROM roles
-WHERE name = $1
+const getRoleIdByRoleName = `-- name: GetRoleIdByRoleName :one
+SELECT id FROM roles WHERE role_name = $1
 `
 
-func (q *Queries) GetRoleByName(ctx context.Context, name string) (Role, error) {
-	row := q.db.QueryRowContext(ctx, getRoleByName, name)
-	var i Role
-	err := row.Scan(
-		&i.ID,
-		&i.Name,
-		&i.CreatedAt,
-		&i.UpdatedAt,
-	)
-	return i, err
+func (q *Queries) GetRoleIdByRoleName(ctx context.Context, roleName string) (uuid.UUID, error) {
+	row := q.db.QueryRowContext(ctx, getRoleIdByRoleName, roleName)
+	var id uuid.UUID
+	err := row.Scan(&id)
+	return id, err
 }
 
 const getRolesByUserID = `-- name: GetRolesByUserID :many
-SELECT r.id, r.name, r.created_at, r.updated_at
+SELECT r.id, r.role_name, r.created_at, r.updated_at
 FROM roles r
 JOIN user_roles ur ON r.id = ur.role_id
 WHERE ur.user_id = $1
@@ -195,7 +189,39 @@ func (q *Queries) GetRolesByUserID(ctx context.Context, userID uuid.UUID) ([]Rol
 		var i Role
 		if err := rows.Scan(
 			&i.ID,
-			&i.Name,
+			&i.RoleName,
+			&i.CreatedAt,
+			&i.UpdatedAt,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const listUsersByType = `-- name: ListUsersByType :many
+SELECT id, role_name, created_at, updated_at FROM roles WHERE role_name = $1
+`
+
+func (q *Queries) ListUsersByType(ctx context.Context, roleName string) ([]Role, error) {
+	rows, err := q.db.QueryContext(ctx, listUsersByType, roleName)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []Role
+	for rows.Next() {
+		var i Role
+		if err := rows.Scan(
+			&i.ID,
+			&i.RoleName,
 			&i.CreatedAt,
 			&i.UpdatedAt,
 		); err != nil {
@@ -218,8 +244,8 @@ WHERE role_id = $1 AND permission_id = $2
 `
 
 type RemovePermissionFromRoleParams struct {
-	RoleID       int32
-	PermissionID int32
+	RoleID       uuid.UUID
+	PermissionID uuid.UUID
 }
 
 func (q *Queries) RemovePermissionFromRole(ctx context.Context, arg RemovePermissionFromRoleParams) error {
@@ -234,7 +260,7 @@ WHERE user_id = $1 AND role_id = $2
 
 type RemoveRoleFromUserParams struct {
 	UserID uuid.UUID
-	RoleID int32
+	RoleID uuid.UUID
 }
 
 func (q *Queries) RemoveRoleFromUser(ctx context.Context, arg RemoveRoleFromUserParams) error {

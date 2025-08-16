@@ -71,7 +71,7 @@ func (s *sUserService) Register(ctx context.Context, verifyKey string, verifyTyp
 	// 5. Gửi OTP
 	switch verifyType {
 	case VerifyTypeEmail:
-		err := sendto.SendTextEmail([]string{verifyKey}, "Vinhtiensinh17@gmail.com", strconv.Itoa(otp))
+		err := sendto.SendTextEmail([]string{verifyKey}, "Vinhtiensinh18@gmail.com", strconv.Itoa(otp))
 		if err != nil {
 			return fmt.Errorf("failed to send email: %w", err)
 		}
@@ -158,15 +158,25 @@ func (s *sUserService) UpdatePasswordRegister(ctx context.Context, in model.Upda
 	if err != nil {
 		return err
 	}
-	err = s.store.CreateUserProfile(ctx, database.CreateUserProfileParams{
+	userProfileId, err := s.store.CreateUserProfile(ctx, database.CreateUserProfileParams{
 		UserBaseID: newUserBase,
 		Names:      in.Names,
-		UserType:   in.UserType,
 		ProfilePic: utils.ToNullString(in.ProfilePic),
 		Bio:        utils.ToNullString(in.Bio),
 	})
 	if err != nil {
 		return fmt.Errorf("failed to create user profile: %w", err)
+	}
+	roleId, err := s.store.GetRoleIdByRoleName(ctx, in.UserType)
+	if err != nil {
+		return fmt.Errorf("failed to get role : %w", err)
+	}
+	err = s.store.AddRoleToUser(ctx, database.AddRoleToUserParams{
+		UserID: userProfileId,
+		RoleID: roleId,
+	})
+	if err != nil {
+		return fmt.Errorf("failed to add role to user: %w", err)
 	}
 	return nil
 }
@@ -191,9 +201,17 @@ func (s *sUserService) Login(ctx context.Context, req model.LoginInPut) (*model.
 	if err != nil {
 		return nil, fmt.Errorf("failed to get user info: %w", err)
 	}
+	userRole, err := s.store.GetRolesByUserID(ctx, userInfo.ID)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get user role: %w", err)
+	}
+	userType := make([]string, len(userRole))
+	for i, role := range userRole {
+		userType[i] = role.RoleName
+	}
 	userToken := model.UserToken{
 		ID:       userInfo.ID,
-		UserType: userInfo.UserType,
+		UserType: userType,
 	}
 	// Tạo token
 	accessToken, refreshToken, err := auth.GenerateTokens(userToken)
@@ -238,9 +256,17 @@ func (s *sUserService) RefreshToken(ctx context.Context, refreshToken string) (*
 		return nil, fmt.Errorf("user not found for refresh token: %w", err)
 	}
 
+	userRole, err := s.store.GetRolesByUserID(ctx, userInfo.ID)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get user role: %w", err)
+	}
+	userType := make([]string, len(userRole))
+	for i, role := range userRole {
+		userType[i] = role.RoleName
+	}
 	userToken := model.UserToken{
 		ID:       userInfo.ID,
-		UserType: userInfo.UserType,
+		UserType: userType,
 	}
 
 	// 3. Xoay vòng token: Tạo cặp token mới và thu hồi token cũ
@@ -278,9 +304,8 @@ func (s *sUserService) GetUserByID(ctx context.Context, id uuid.UUID) (model.Use
 		ID:         dbUser.ID,
 		UserBaseID: dbUser.UserBaseID,
 		Names:      dbUser.Names,
-		UserType:   dbUser.UserType,
-		ProfilePic: utils.PtrIfValid(dbUser.ProfilePic),
-		Bio:        utils.PtrIfValid(dbUser.Bio),
+		ProfilePic: utils.PtrStringIfValid(dbUser.ProfilePic),
+		Bio:        utils.PtrStringIfValid(dbUser.Bio),
 		CreatedAt:  dbUser.CreatedAt,
 		UpdatedAt:  dbUser.UpdatedAt,
 	}, nil
@@ -289,27 +314,4 @@ func (s *sUserService) GetUserByID(ctx context.Context, id uuid.UUID) (model.Use
 // Xóa user base (ví dụ rollback nếu step 2 fail)
 func (s *sUserService) DeleteUserBase(ctx context.Context, userBaseID uuid.UUID) error {
 	return s.store.DeleteUserBase(ctx, userBaseID)
-}
-
-// Lấy danh sách user theo type
-func (s *sUserService) ListUsersByType(ctx context.Context, userType string) ([]model.User, error) {
-	dbUsers, err := s.store.ListUsersByType(ctx, userType)
-	if err != nil {
-		return nil, err
-	}
-
-	users := make([]model.User, len(dbUsers))
-	for i, u := range dbUsers {
-		users[i] = model.User{
-			ID:         u.ID,
-			UserBaseID: u.UserBaseID,
-			Names:      u.Names,
-			UserType:   u.UserType,
-			ProfilePic: utils.PtrIfValid(u.ProfilePic),
-			Bio:        utils.PtrIfValid(u.Bio),
-			CreatedAt:  u.CreatedAt,
-			UpdatedAt:  u.UpdatedAt,
-		}
-	}
-	return users, nil
 }

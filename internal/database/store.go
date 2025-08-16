@@ -1,11 +1,13 @@
 package database
 
 import (
+	"context"
 	"database/sql"
 )
 
 type Store interface {
 	Querier
+	ExecTx(ctx context.Context, fn func(*Queries) error) error // Thêm dòng này
 }
 
 type SQLStore struct {

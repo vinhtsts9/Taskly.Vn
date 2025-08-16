@@ -171,23 +171,6 @@ func (ctl *UserController) DeleteUser(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"message": "User deleted successfully"})
 }
 
-// Lấy danh sách user theo loại
-func (ctl *UserController) ListUsersByType(c *gin.Context) {
-	userType := c.Query("type")
-	if userType == "" {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Missing user type"})
-		return
-	}
-
-	users, err := ctl.svc.ListUsersByType(c.Request.Context(), userType)
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to retrieve users"})
-		return
-	}
-
-	c.JSON(http.StatusOK, users)
-}
-
 func (ctl *UserController) RefreshToken(c *gin.Context) {
 	refreshToken, err := c.Cookie("refresh_token")
 	if err != nil {

@@ -2,6 +2,7 @@ package service
 
 import (
 	"context"
+	"mime/multipart"
 
 	model "Taskly.com/m/internal/models"
 	"github.com/google/uuid"
@@ -22,6 +23,17 @@ type IGigService interface {
 
 	// 5. Xoá dịch vụ
 	DeleteService(ctx context.Context, id uuid.UUID) error
+
+	// 6.Lấy danh mục
+	GetCategories(cxt context.Context) ([]model.GetCategoriesRs, error)
+
+	// 7. Upload nhiều ảnh cho Gig
+	UploadGigImages(ctx context.Context, files []*multipart.FileHeader) ([]string, error)
+
+	// ... (các hàm hiện có) ...
+
+	// 8. Tìm kiếm dịch vụ theo tiêu đề hoặc mô tả
+	SearchGigs(ctx context.Context, params model.SearchGigParams) ([]model.SearchGigDTO, error)
 }
 
 var (

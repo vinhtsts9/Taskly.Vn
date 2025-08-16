@@ -18,8 +18,9 @@ import (
 
 // Client struct được đơn giản hóa, không cần trường Auth
 type Client struct {
-	UserInfo *model.User
-	Conn     *websocket.Conn
+	UserInfo       *model.UserToken
+	Conn           *websocket.Conn
+	PermittedRooms map[uuid.UUID]bool // Thêm trường này để cache phòng mà user có quyền truy cập
 }
 type RoomMessage struct {
 	RoomId  uuid.UUID
@@ -127,6 +128,26 @@ func HandleConnections(ctx *gin.Context, cm *ConnectionManager) {
 		return
 	}
 
+	// LẤY VÀ CACHE DANH SÁCH PHÒNG CỦA NGƯỜI DÙNG
+	userRooms, err := service.GetChatService().GetRoomChatByUserId(ctx, userInfo.ID)
+	if err != nil {
+		global.Logger.Sugar().Errorf("Lỗi khi lấy danh sách phòng của người dùng %s: %v", userInfo.ID.String(), err)
+		ctx.JSON(http.StatusInternalServerError, gin.H{"error": "Internal server error"})
+		ctx.Abort()
+		return
+	}
+
+	// Lưu danh sách phòng vào Client struct hoặc một cache riêng
+	// Đối với ví dụ này, chúng ta sẽ lưu tạm vào Client struct
+	// Nếu bạn muốn cache toàn cục, cân nhắc dùng Redis hoặc Sync.Map trong ConnectionManager
+	// Tạm thời, chúng ta có thể thêm một trường map[uuid.UUID]bool vào Client struct để kiểm tra nhanh
+	// Ví dụ: client.PermittedRooms map[uuid.UUID]bool
+
+	// Để đơn giản hóa, hiện tại tôi sẽ truyền trực tiếp userRooms vào client struct.
+	// Bạn có thể cân nhắc một cấu trúc cache phù hợp hơn.
+	// Tuy nhiên, việc truyền trực tiếp này có thể làm Client struct lớn nếu user có nhiều phòng.
+	// Một cách tốt hơn là cache nó ở ConnectionManager hoặc dùng Redis với key là UserID.
+
 	conn, err := upgrader.Upgrade(ctx.Writer, ctx.Request, nil)
 	if err != nil {
 		global.Logger.Sugar().Errorf("Lỗi khi nâng cấp WebSocket: %v", err)
@@ -140,9 +161,16 @@ func HandleConnections(ctx *gin.Context, cm *ConnectionManager) {
 	}()
 
 	client := &Client{
-		UserInfo: userInfo,
-		Conn:     conn,
+		UserInfo:       userInfo,
+		Conn:           conn,
+		PermittedRooms: make(map[uuid.UUID]bool),
 	}
+
+	// Populate PermittedRooms
+	for _, room := range userRooms {
+		client.PermittedRooms[room.ID] = true
+	}
+
 	cm.register <- client
 
 	const (
@@ -176,11 +204,11 @@ func HandleConnections(ctx *gin.Context, cm *ConnectionManager) {
 			cm.unregister <- conn
 			return
 		}
-		cm.handleMessage(message, client, ctx)
+		cm.handleMessage(message, client, ctx, userRooms) // TRUYỀN DANH SÁCH PHÒNG ĐÃ CACHE
 	}
 }
 
-func (cm *ConnectionManager) handleMessage(message []byte, client *Client, ctx *gin.Context) {
+func (cm *ConnectionManager) handleMessage(message []byte, client *Client, ctx *gin.Context, userRooms []model.RoomWithLastMessage) {
 	var msgData map[string]interface{}
 	if err := json.Unmarshal(message, &msgData); err != nil {
 		client.Conn.WriteMessage(websocket.TextMessage, []byte("Invalid message format"))
@@ -204,6 +232,14 @@ func (cm *ConnectionManager) handleMessage(message []byte, client *Client, ctx *
 			client.Conn.WriteMessage(websocket.TextMessage, []byte("Invalid room_id format"))
 			return
 		}
+
+		// KIỂM TRA QUYỀN TRUY CẬP PHÒNG BẰNG CACHE
+		if _, ok := client.PermittedRooms[roomID]; !ok {
+			global.Logger.Sugar().Warnf("Người dùng %s không có quyền truy cập phòng %s", client.UserInfo.ID, roomID)
+			client.Conn.WriteMessage(websocket.TextMessage, []byte("Bạn không có quyền tham gia phòng này"))
+			return
+		}
+
 		cm.AddClient(client, roomID)
 
 	case "leave":
@@ -228,6 +264,13 @@ func (cm *ConnectionManager) handleMessage(message []byte, client *Client, ctx *
 		roomID, err := uuid.Parse(roomIDStr)
 		if err != nil {
 			client.Conn.WriteMessage(websocket.TextMessage, []byte("Invalid room_id format"))
+			return
+		}
+
+		// KIỂM TRA QUYỀN GỬI TIN NHẮN TRONG PHÒNG BẰNG CACHE
+		if _, ok := client.PermittedRooms[roomID]; !ok {
+			global.Logger.Sugar().Warnf("Người dùng %s không có quyền gửi tin nhắn trong phòng %s", client.UserInfo.ID, roomID)
+			client.Conn.WriteMessage(websocket.TextMessage, []byte("Bạn không có quyền gửi tin nhắn trong phòng này"))
 			return
 		}
 

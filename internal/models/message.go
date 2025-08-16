@@ -15,11 +15,15 @@ type Room struct {
 	CreatedAt time.Time `json:"created_at"`
 }
 
-// RoomWithLastMessage bao gồm thông tin room và tin nhắn cuối cùng
+// RoomWithLastMessage bao gồm thông tin room, user và tin nhắn cuối cùng
 type RoomWithLastMessage struct {
 	ID              uuid.UUID `json:"id"`
 	User1ID         uuid.UUID `json:"user1_id"`
+	User1Name       string    `json:"user1_name"`
+	User1ProfilePic *string   `json:"user1_profile_pic,omitempty"`
 	User2ID         uuid.UUID `json:"user2_id"`
+	User2Name       string    `json:"user2_name"`
+	User2ProfilePic *string   `json:"user2_profile_pic,omitempty"`
 	CreatedAt       time.Time `json:"created_at"`
 	LastMessage     string    `json:"last_message"`
 	LastMessageTime time.Time `json:"last_message_time"`

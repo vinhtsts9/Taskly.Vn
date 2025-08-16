@@ -43,6 +43,21 @@ func ToNullString(s *string) sql.NullString {
 	return sql.NullString{Valid: false}
 }
 
+func ToSliceNullString(arr *[]string) []sql.NullString {
+	if arr == nil {
+		return nil
+	}
+	result := make([]sql.NullString, len(*arr))
+	for i, v := range *arr {
+		if v != "" {
+			result[i] = sql.NullString{String: v, Valid: true}
+		} else {
+			result[i] = sql.NullString{Valid: false}
+		}
+	}
+	return result
+}
+
 func PtrTimeIfValid(nt sql.NullTime) *time.Time {
 	if nt.Valid {
 		return &nt.Time
@@ -50,9 +65,9 @@ func PtrTimeIfValid(nt sql.NullTime) *time.Time {
 	return nil
 }
 
-func PtrIfValid(ns sql.NullString) *string {
-	if ns.Valid {
-		return &ns.String
+func PtrSliceIfValid(slice []string) *[]string {
+	if len(slice) > 0 {
+		return &slice
 	}
 	return nil
 }
@@ -75,4 +90,11 @@ func GenerateCliTokenUUID(userId int) string {
 	newUUID := uuid.New()
 	uuidString := strings.ReplaceAll((newUUID).String(), "", "")
 	return strconv.Itoa(userId) + "clitoken" + uuidString
+}
+
+func PtrStringIfValid(ns sql.NullString) *string {
+	if ns.Valid {
+		return &ns.String
+	}
+	return nil
 }

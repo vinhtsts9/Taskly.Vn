@@ -1,15 +1,17 @@
 -- name: CreateRole :one
-INSERT INTO roles (name)
+INSERT INTO roles (role_name)
 VALUES ($1)
 RETURNING *;
 
--- name: GetRoleByName :one
-SELECT * FROM roles
-WHERE name = $1;
+-- name: ListUsersByType :many
+SELECT * FROM roles WHERE role_name = $1;
 
 -- name: AddRoleToUser :exec
 INSERT INTO user_roles (user_id, role_id)
 VALUES ($1, $2);
+
+-- name: GetRoleIdByRoleName :one
+SELECT id FROM roles WHERE role_name = $1;
 
 -- name: GetRolesByUserID :many
 SELECT r.*
@@ -25,6 +27,7 @@ WHERE user_id = $1 AND role_id = $2;
 INSERT INTO permissions (name, resource, action)
 VALUES ($1, $2, $3)
 RETURNING *;
+
 
 -- name: AddPermissionToRole :exec
 INSERT INTO role_permissions (role_id, permission_id)

@@ -2,10 +2,10 @@ package initialize
 
 import (
 	"Taskly.com/m/global"
-	"Taskly.com/m/internal/middlewares"
 	"Taskly.com/m/internal/routers"
 
 	elasticsearch "Taskly.com/m/elasticSearch"
+	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 )
 
@@ -23,7 +23,14 @@ func InitRouter() *gin.Engine {
 	// middlewares
 	// r.Use() logging
 	// r.Use() cors
-	r.Use(middlewares.CORSMiddleware())
+	r.Use(cors.New(cors.Config{
+		AllowOrigins:     []string{"http://localhost:3000"},
+		AllowMethods:     []string{"GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"},
+		AllowHeaders:     []string{"Origin", "Content-Type", "Accept", "Authorization", "X-Requested-With"},
+		ExposeHeaders:    []string{"Content-Length"},
+		AllowCredentials: true,
+		MaxAge:           3600,
+	}))
 	// r.Use() limiter global
 	manageRouter := routers.RouterGroupApp.Manage
 	userRouter := routers.RouterGroupApp.User
@@ -40,11 +47,9 @@ func InitRouter() *gin.Engine {
 		userRouter.InitGigRouter(MainGroup)
 		userRouter.InitDisputeRouter(MainGroup)
 		userRouter.InitChatRouter(MainGroup)
-		userRouter.InitRbacRouter(MainGroup)
 	}
 	{
 		manageRouter.InitAdminRouter(MainGroup)
-		manageRouter.InitUserRouter(MainGroup)
 	}
 	return r
 }

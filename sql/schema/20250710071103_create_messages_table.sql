@@ -3,12 +3,15 @@
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 
 -- 1. Tạo bảng rooms
+
 CREATE TABLE rooms (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v1(),
     user1_id UUID NOT NULL,
     user2_id UUID NOT NULL,
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
+--CREATE UNIQUE INDEX ux_rooms_user_pair
+--ON rooms (LEAST(user1_id, user2_id), GREATEST(user1_id, user2_id));
 
 -- Thêm index cho truy vấn theo user
 CREATE INDEX idx_rooms_user1_id ON rooms(user1_id);

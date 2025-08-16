@@ -165,16 +165,13 @@ func SearchGigs(c *gin.Context) {
 
 		item := map[string]any{
 			"gig": map[string]interface{}{
-				"id":            hit.Source.ID,
-				"user_id":       hit.Source.UserID,
-				"title":         hit.Source.Title,
-				"description":   hit.Source.Description,
-				"category_id":   hit.Source.CategoryID,
-				"price":         hit.Source.Price,
-				"delivery_time": hit.Source.DeliveryTime,
-				"image_url":     hit.Source.ImageURL,
-				"status":        hit.Source.Status,
-				"created_at":    createdAtStr, // Trả về chuỗi đã định dạng
+				"id":          hit.Source.ID,
+				"user_id":     hit.Source.UserID,
+				"title":       hit.Source.Title,
+				"category_id": hit.Source.CategoryID,
+				"image_url":   hit.Source.ImageURL,
+				"status":      hit.Source.Status,
+				"created_at":  createdAtStr, // Trả về chuỗi đã định dạng
 			},
 		}
 		results = append(results, item)

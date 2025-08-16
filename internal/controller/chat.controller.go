@@ -1,6 +1,7 @@
 package controller
 
 import (
+	"fmt"
 	"net/http"
 	"time"
 
@@ -25,6 +26,7 @@ func NewChatController() *ChatController {
 // 1. Tạo phòng chat
 func (ctl *ChatController) CreateRoom(c *gin.Context) {
 	var req struct {
+		Content string `json:"content" binding:"required"`
 		User2ID string `json:"user2_id" binding:"required"`
 	}
 	if err := c.ShouldBindJSON(&req); err != nil {
@@ -37,7 +39,7 @@ func (ctl *ChatController) CreateRoom(c *gin.Context) {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid user credentials"})
 		return
 	}
-
+	content := req.Content
 	user1ID := userInfo.ID
 	user2ID, err := uuid.Parse(req.User2ID)
 	if err != nil {
@@ -51,9 +53,10 @@ func (ctl *ChatController) CreateRoom(c *gin.Context) {
 		return
 	}
 
-	room, err := ctl.svc.CreateRoom(c, user1ID, user2ID)
+	room, err := ctl.svc.CreateRoom(c, user1ID, user2ID, content)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Could not create room"})
+		fmt.Println("error create room: ", err)
 		return
 	}
 
@@ -142,4 +145,36 @@ func (ctl *ChatController) GetRoomChatByUserId(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, rooms)
+}
+
+// 5. Kiểm tra phòng đã hợp lệ chưa
+func (ctl *ChatController) RoomExists(c *gin.Context) {
+	var req struct {
+		User2ID string `json:"user2_id" binding:"required"`
+	}
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid input: user2_id is required"})
+		return
+	}
+
+	userInfo := auth.GetUserFromContext(c)
+	if userInfo.ID == uuid.Nil {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid user credentials"})
+		return
+	}
+
+	user1ID := userInfo.ID
+	user2ID, err := uuid.Parse(req.User2ID)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid User2ID format"})
+		return
+	}
+
+	exists, err := ctl.svc.CheckRoomExist(c, user1ID, user2ID)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to check room exists"})
+		return
+	}
+
+	c.JSON(http.StatusOK, exists)
 }

@@ -27,7 +27,7 @@ func (s *rbacService) CreatePermission(ctx context.Context, arg database.CreateP
 }
 
 // GetPermissionsByRoleID implements service.RBACService.
-func (s *rbacService) GetPermissionsByRoleID(ctx context.Context, roleID int32) ([]database.Permission, error) {
+func (s *rbacService) GetPermissionsByRoleID(ctx context.Context, roleID uuid.UUID) ([]database.Permission, error) {
 	return s.store.GetPermissionsByRoleID(ctx, roleID)
 }
 

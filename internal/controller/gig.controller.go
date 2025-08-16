@@ -1,8 +1,8 @@
 package controller
 
 import (
+	"fmt"
 	"net/http"
-	"strconv"
 
 	"Taskly.com/m/global"
 	model "Taskly.com/m/internal/models"
@@ -26,13 +26,15 @@ func NewGigController() *GigController {
 func (ctl *GigController) CreateService(c *gin.Context) {
 	var input model.CreateServiceParams
 	if err := c.ShouldBindJSON(&input); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid input"})
+		fmt.Println("Binding error:", err.Error())
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid input", "details": err.Error()})
 		return
 	}
 
 	gig, err := ctl.svc.CreateService(c, input)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to create service"})
+		fmt.Println("err", err)
 		return
 	}
 
@@ -97,8 +99,54 @@ func (ctl *GigController) DeleteService(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"message": "Service deleted successfully"})
 }
 
-// Helper parseInt (an toàn)
-func parseInt(s string) int {
-	i, _ := strconv.Atoi(s)
-	return i
+func (ctl *GigController) GetCategories(c *gin.Context) {
+	rs, err := ctl.svc.GetCategories(c)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to get categories"})
+		return
+	}
+	global.Logger.Info("Successfully retrieved categories", zap.Any("categories", rs))
+	c.JSON(http.StatusOK, rs)
+}
+
+func (ctl *GigController) UploadGigMedia(c *gin.Context) {
+	// Parse multipart form
+	form, err := c.MultipartForm()
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Không thể đọc dữ liệu form multipart."})
+		return
+	}
+
+	files := form.File["files"] // "files" là tên trường mà frontend gửi (FilePicker)
+
+	if len(files) == 0 {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Không có file nào được tải lên."})
+		return
+	}
+
+	urls, err := ctl.svc.UploadGigImages(c.Request.Context(), files)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Lỗi khi tải lên file."})
+		return
+	}
+	c.JSON(http.StatusOK, urls)
+}
+
+// 7. Tìm kiếm dịch vụ
+func (ctl *GigController) SearchGigs(c *gin.Context) {
+	var params model.SearchGigParams
+	if err := c.ShouldBindQuery(&params); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid search parameters"})
+		return
+	}
+
+	gigs, err := ctl.svc.SearchGigs(c, params)
+	if err != nil {
+		global.Logger.Error("Controller: Failed to search gigs", zap.Error(err))
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to search gigs"})
+		return
+	}
+	fmt.Println("search rs: ", gigs)
+
+	c.JSON(http.StatusOK, gigs)
 }

@@ -11,7 +11,7 @@ import (
 type IChatService interface {
 
 	// 1. Tạo phòng chat giữa 2 user
-	CreateRoom(ctx context.Context, user1ID, user2ID uuid.UUID) (model.Room, error)
+	CreateRoom(ctx context.Context, user1ID, user2ID uuid.UUID, content string) (model.Room, error)
 	GetRoomInfo(ctx context.Context, roomID uuid.UUID) (model.RoomInfo, error)
 
 	// 2. Gửi tin nhắn vào phòng chat
@@ -22,6 +22,9 @@ type IChatService interface {
 
 	// 4. Lấy tất cả phòng chat của user
 	GetRoomChatByUserId(ctx context.Context, userID uuid.UUID) ([]model.RoomWithLastMessage, error)
+
+	// 5.Kiểm tra phòng tồn tại
+	CheckRoomExist(ctx context.Context, user1ID, user2ID uuid.UUID) (model.Room, error)
 }
 
 var (

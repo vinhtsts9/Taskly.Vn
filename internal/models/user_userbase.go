@@ -24,7 +24,6 @@ type User struct {
 	ID         uuid.UUID `json:"id"`                    // PK
 	UserBaseID uuid.UUID `json:"user_base_id"`          // FK
 	Names      string    `json:"user_names"`            // UNIQUE NOT NULL
-	UserType   string    `json:"user_type"`             // CHECK in ('buyer','seller','both')
 	ProfilePic *string   `json:"profile_pic,omitempty"` // nullable TEXT
 	Bio        *string   `json:"bio,omitempty"`         // nullable TEXT
 	CreatedAt  time.Time `json:"created_at"`            // default now()
@@ -43,7 +42,7 @@ type CreateUserTxParams struct {
 
 type UserToken struct {
 	ID       uuid.UUID `json:"id"`
-	UserType string    `json:"user_type"`
+	UserType []string  `json:"user_type"`
 }
 
 // Kết quả trả ra

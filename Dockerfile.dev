@@ -1,0 +1,22 @@
+FROM golang:alpine
+
+WORKDIR /app
+
+# Cài đặt air cho hot-reloading
+# Thêm RUN apk add --no-cache git để cài git nếu cần cho air
+RUN go install github.com/air-verse/air@latest
+
+# Copy go.mod và go.sum để tải dependency ban đầu (sẽ được cache)
+COPY go.mod go.sum ./
+
+RUN go mod download
+
+# Copy toàn bộ mã nguồn. LƯU Ý: Phần này sẽ bị GHI ĐÈ bởi volume mount trong docker-compose.
+# Nó chỉ hữu ích nếu image này được chạy mà không có volume mount.
+COPY . .
+
+# Mở port mà ứng dụng Go của bạn lắng nghe
+EXPOSE 8080
+
+# Lệnh khởi chạy ứng dụng Go với air
+CMD ["air", "-c", ".air.conf"]
