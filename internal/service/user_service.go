@@ -24,9 +24,6 @@ type IUserService interface {
 
 	// 6. Xóa user base (xóa tài khoản)
 	DeleteUserBase(ctx context.Context, userBaseID uuid.UUID) error
-
-	// 7. Lấy danh sách user theo loại
-	ListUsersByType(ctx context.Context, userType string) ([]model.User, error)
 }
 
 var (

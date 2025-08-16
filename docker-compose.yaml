@@ -115,7 +115,28 @@ services:
      - DATABASE_NAME=test
     networks:
      - taskly-network
-  
+
+  # THÊM SERVICE CHO ỨNG DỤNG GO (MÔI TRƯỜNG PHÁT TRIỂN)
+  go-app-dev:
+    build:
+      context: .
+      dockerfile: Dockerfile.dev # SỬ DỤNG DOCKERFILE.DEV
+    container_name: taskly-go-app-dev
+    restart: no # Không tự động restart trong dev
+    ports:
+      - "8080:8080"
+    volumes:
+      - .:/app # <-- MOUNT CODE: Thư mục hiện tại của host vào /app trong container
+      - go-mod-cache:/go/pkg/mod # Cache go modules để tăng tốc rebuild trong container (nếu có)
+    working_dir: /app
+    depends_on:
+      - postgres
+      - redis
+      - kafka # Nếu app Go của bạn tương tác với Kafka
+      - elasticsearch # Nếu app Go của bạn tương tác với Elasticsearch
+    networks:
+      - taskly-network
+
 networks:
   taskly-network:
     external: true
@@ -124,3 +145,4 @@ volumes:
   pgdata-taskly:
   esdata-taskly:
   redis_data-taskly:
+  go-mod-cache:

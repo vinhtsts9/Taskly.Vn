@@ -13,7 +13,7 @@ import (
 
 type PayloadClaims struct {
 	UserID   uuid.UUID `json:"user_id"`
-	UserType string    `json:"user_type"`
+	UserType []string  `json:"user_type"`
 	jwt.StandardClaims
 }
 
@@ -35,7 +35,7 @@ func CreateToken(userToken model.UserToken) (string, error) {
 
 	return GenTokenJWT(&PayloadClaims{
 		UserID:   userToken.ID,
-		UserType: string(userToken.UserType),
+		UserType: []string(userToken.UserType),
 		StandardClaims: jwt.StandardClaims{
 			Id:        uuid.New().String(),
 			ExpiresAt: expiresAt.Unix(),

@@ -16,5 +16,6 @@ func InitServiceInterface() {
 	service.InitDisputeService(impl.NewDisputeService(queries))
 	service.InitVNPayService(impl.NewVNPayService("", "", "", ""))
 	service.InitRBACService(impl.NewRBACService(queries))
+	service.InitAdminUserService(impl.NewAdminUserService(queries))
 
 }

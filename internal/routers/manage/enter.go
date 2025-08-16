@@ -1,13 +1,11 @@
 package manage
 
 type ManageRouterGroup struct {
-	UserRouter
 	AdminRouter
 }
 
-func NewManageRouterGroup(userRouter UserRouter, adminRouter AdminRouter) ManageRouterGroup {
+func NewManageRouterGroup(adminRouter AdminRouter) ManageRouterGroup {
 	return ManageRouterGroup{
-		UserRouter:  userRouter,
 		AdminRouter: adminRouter,
 	}
 }

@@ -11,9 +11,10 @@ WHERE email = $1;
 -- name: CheckUserExist :one
 SELECT EXISTS(SELECT 1 FROM user_base WHERE email = $1);
 
--- name: CreateUserProfile :exec
-INSERT INTO users (user_base_id, names, user_type, profile_pic, bio)
-VALUES ($1, $2, $3, $4, $5);
+-- name: CreateUserProfile :one
+INSERT INTO users (user_base_id, names, profile_pic, bio)
+VALUES ($1, $2, $3, $4)
+RETURNING id;
 
 -- name: UpdateLoginInfo :exec
 UPDATE user_base
@@ -30,7 +31,7 @@ WHERE user_base_id = $1;
 
 -- name: GetUserInfoToSetToken :one
 SELECT 
-    u.id, u.names, u.user_type, u.profile_pic, u.bio,
+    u.id, u.names, u.profile_pic, u.bio,
     u.created_at, u.updated_at
 FROM users u
 JOIN user_base b ON u.user_base_id = b.user_base_id
@@ -39,8 +40,6 @@ WHERE b.user_base_id = $1;
 -- name: DeleteUserBase :exec
 DELETE FROM user_base WHERE user_base_id = $1;
 
--- name: ListUsersByType :many
-SELECT * FROM users WHERE user_type = $1;
 
 -- name: GetUserByID :one
 SELECT * FROM users WHERE id = $1;

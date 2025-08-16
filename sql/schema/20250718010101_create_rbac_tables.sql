@@ -3,8 +3,8 @@
 
 -- Bảng `roles` để lưu các vai trò (ví dụ: admin, buyer, seller)
 CREATE TABLE roles (
-    id SERIAL PRIMARY KEY,
-    name VARCHAR(50) UNIQUE NOT NULL,
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v1(),
+    role_name VARCHAR(10) CHECK (role_name IN ('buyer', 'seller', 'admin')) NOT NULL,
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
@@ -12,7 +12,7 @@ CREATE TABLE roles (
 -- Bảng `permissions` để lưu các quyền hạn chi tiết
 -- Ví dụ: có quyền 'tạo' (action) trên tài nguyên 'gigs' (resource)
 CREATE TABLE permissions (
-    id SERIAL PRIMARY KEY,
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v1(),
     name VARCHAR(255) NOT NULL, -- Tên quyền để dễ nhận biết, ví dụ: "Tạo gig mới"
     resource VARCHAR(100) NOT NULL, -- Tên tài nguyên, ví dụ: "gigs", "orders", "users"
     action VARCHAR(50) NOT NULL, -- Hành động, ví dụ: "create", "read", "update", "delete", "manage"
@@ -25,7 +25,7 @@ CREATE TABLE permissions (
 -- Mối quan hệ nhiều-nhiều giữa `users` và `roles`
 CREATE TABLE user_roles (
     user_id UUID NOT NULL,
-    role_id INTEGER NOT NULL,
+    role_id UUID NOT NULL,
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     PRIMARY KEY (user_id, role_id)
 );
@@ -33,8 +33,8 @@ CREATE TABLE user_roles (
 -- Bảng `role_permissions` là bảng trung gian để gán quyền cho vai trò
 -- Mối quan hệ nhiều-nhiều giữa `roles` và `permissions`
 CREATE TABLE role_permissions (
-    role_id INTEGER NOT NULL,
-    permission_id INTEGER NOT NULL,
+    role_id UUID NULL,
+    permission_id UUID NOT NULL,
     PRIMARY KEY (role_id, permission_id)
 );
 

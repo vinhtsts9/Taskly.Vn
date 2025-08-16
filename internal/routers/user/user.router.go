@@ -20,7 +20,6 @@ func (pr *UserRouter) InitUserRouter(Router *gin.RouterGroup) {
 		userRouterPublic.POST("/login", userController.Login)
 		userRouterPublic.POST("/refresh-token", userController.RefreshToken) // Route mới
 		userRouterPublic.GET("/:id", userController.GetUserByID)
-		userRouterPublic.GET("/", userController.ListUsersByType) // /users?type=seller
 	}
 
 	userRouterPrivate := Router.Group("/users")

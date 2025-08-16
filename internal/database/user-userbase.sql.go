@@ -54,28 +54,29 @@ func (q *Queries) CreateUserBase(ctx context.Context, arg CreateUserBaseParams) 
 	return user_base_id, err
 }
 
-const createUserProfile = `-- name: CreateUserProfile :exec
-INSERT INTO users (user_base_id, names, user_type, profile_pic, bio)
-VALUES ($1, $2, $3, $4, $5)
+const createUserProfile = `-- name: CreateUserProfile :one
+INSERT INTO users (user_base_id, names, profile_pic, bio)
+VALUES ($1, $2, $3, $4)
+RETURNING id
 `
 
 type CreateUserProfileParams struct {
 	UserBaseID uuid.UUID
 	Names      string
-	UserType   string
 	ProfilePic sql.NullString
 	Bio        sql.NullString
 }
 
-func (q *Queries) CreateUserProfile(ctx context.Context, arg CreateUserProfileParams) error {
-	_, err := q.db.ExecContext(ctx, createUserProfile,
+func (q *Queries) CreateUserProfile(ctx context.Context, arg CreateUserProfileParams) (uuid.UUID, error) {
+	row := q.db.QueryRowContext(ctx, createUserProfile,
 		arg.UserBaseID,
 		arg.Names,
-		arg.UserType,
 		arg.ProfilePic,
 		arg.Bio,
 	)
-	return err
+	var id uuid.UUID
+	err := row.Scan(&id)
+	return id, err
 }
 
 const deleteUserBase = `-- name: DeleteUserBase :exec
@@ -107,7 +108,7 @@ func (q *Queries) GetUserBaseToCheckLogin(ctx context.Context, email string) (Ge
 }
 
 const getUserByID = `-- name: GetUserByID :one
-SELECT id, user_base_id, names, user_type, profile_pic, bio, created_at, updated_at FROM users WHERE id = $1
+SELECT id, user_base_id, names, profile_pic, bio, created_at, updated_at FROM users WHERE id = $1
 `
 
 func (q *Queries) GetUserByID(ctx context.Context, id uuid.UUID) (User, error) {
@@ -117,7 +118,6 @@ func (q *Queries) GetUserByID(ctx context.Context, id uuid.UUID) (User, error) {
 		&i.ID,
 		&i.UserBaseID,
 		&i.Names,
-		&i.UserType,
 		&i.ProfilePic,
 		&i.Bio,
 		&i.CreatedAt,
@@ -128,7 +128,7 @@ func (q *Queries) GetUserByID(ctx context.Context, id uuid.UUID) (User, error) {
 
 const getUserInfoToSetToken = `-- name: GetUserInfoToSetToken :one
 SELECT 
-    u.id, u.names, u.user_type, u.profile_pic, u.bio,
+    u.id, u.names, u.profile_pic, u.bio,
     u.created_at, u.updated_at
 FROM users u
 JOIN user_base b ON u.user_base_id = b.user_base_id
@@ -138,7 +138,6 @@ WHERE b.user_base_id = $1
 type GetUserInfoToSetTokenRow struct {
 	ID         uuid.UUID
 	Names      string
-	UserType   string
 	ProfilePic sql.NullString
 	Bio        sql.NullString
 	CreatedAt  time.Time
@@ -151,49 +150,12 @@ func (q *Queries) GetUserInfoToSetToken(ctx context.Context, userBaseID uuid.UUI
 	err := row.Scan(
 		&i.ID,
 		&i.Names,
-		&i.UserType,
 		&i.ProfilePic,
 		&i.Bio,
 		&i.CreatedAt,
 		&i.UpdatedAt,
 	)
 	return i, err
-}
-
-const listUsersByType = `-- name: ListUsersByType :many
-SELECT id, user_base_id, names, user_type, profile_pic, bio, created_at, updated_at FROM users WHERE user_type = $1
-`
-
-func (q *Queries) ListUsersByType(ctx context.Context, userType string) ([]User, error) {
-	rows, err := q.db.QueryContext(ctx, listUsersByType, userType)
-	if err != nil {
-		return nil, err
-	}
-	defer rows.Close()
-	var items []User
-	for rows.Next() {
-		var i User
-		if err := rows.Scan(
-			&i.ID,
-			&i.UserBaseID,
-			&i.Names,
-			&i.UserType,
-			&i.ProfilePic,
-			&i.Bio,
-			&i.CreatedAt,
-			&i.UpdatedAt,
-		); err != nil {
-			return nil, err
-		}
-		items = append(items, i)
-	}
-	if err := rows.Close(); err != nil {
-		return nil, err
-	}
-	if err := rows.Err(); err != nil {
-		return nil, err
-	}
-	return items, nil
 }
 
 const updateLoginInfo = `-- name: UpdateLoginInfo :exec

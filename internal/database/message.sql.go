@@ -13,19 +13,66 @@ import (
 	"github.com/google/uuid"
 )
 
+const checkRoomExist = `-- name: CheckRoomExist :one
+SELECT id, user1_id, user2_id, created_at
+FROM rooms
+WHERE (user1_id = LEAST($1::uuid, $2::uuid)
+       AND user2_id = GREATEST($1::uuid, $2::uuid))
+LIMIT 1
+`
+
+type CheckRoomExistParams struct {
+	Column1 uuid.UUID
+	Column2 uuid.UUID
+}
+
+func (q *Queries) CheckRoomExist(ctx context.Context, arg CheckRoomExistParams) (Room, error) {
+	row := q.db.QueryRowContext(ctx, checkRoomExist, arg.Column1, arg.Column2)
+	var i Room
+	err := row.Scan(
+		&i.ID,
+		&i.User1ID,
+		&i.User2ID,
+		&i.CreatedAt,
+	)
+	return i, err
+}
+
+const checkUserInRoom = `-- name: CheckUserInRoom :one
+
+SELECT EXISTS(
+    SELECT 1
+    FROM rooms
+    WHERE id = $1 AND (user1_id = $2 OR user2_id = $2)
+)
+`
+
+type CheckUserInRoomParams struct {
+	ID      uuid.UUID
+	User1ID uuid.UUID
+}
+
+// SẮP XẾP THEO THỜI GIAN CỦA TIN NHẮN CUỐI CÙNG
+func (q *Queries) CheckUserInRoom(ctx context.Context, arg CheckUserInRoomParams) (bool, error) {
+	row := q.db.QueryRowContext(ctx, checkUserInRoom, arg.ID, arg.User1ID)
+	var exists bool
+	err := row.Scan(&exists)
+	return exists, err
+}
+
 const createRoom = `-- name: CreateRoom :one
 INSERT INTO rooms (user1_id, user2_id)
-VALUES ($1, $2)
+VALUES (LEAST($1::uuid, $2::uuid), GREATEST($1::uuid, $2::uuid))
 RETURNING id, user1_id, user2_id, created_at
 `
 
 type CreateRoomParams struct {
-	User1ID uuid.UUID
-	User2ID uuid.UUID
+	Column1 uuid.UUID
+	Column2 uuid.UUID
 }
 
 func (q *Queries) CreateRoom(ctx context.Context, arg CreateRoomParams) (Room, error) {
-	row := q.db.QueryRowContext(ctx, createRoom, arg.User1ID, arg.User2ID)
+	row := q.db.QueryRowContext(ctx, createRoom, arg.Column1, arg.Column2)
 	var i Room
 	err := row.Scan(
 		&i.ID,
@@ -40,7 +87,7 @@ const getChatHistory = `-- name: GetChatHistory :many
 SELECT id, room_id, sender_id, receiver_id, content, sent_at FROM messages
 WHERE room_id = $1 AND sent_at < $2
 ORDER BY sent_at DESC
-LIMIT 5
+LIMIT 10
 `
 
 type GetChatHistoryParams struct {
@@ -82,12 +129,18 @@ const getRoomChatByUserId = `-- name: GetRoomChatByUserId :many
 SELECT
     r.id,
     r.user1_id,
+    u1.names AS user1_name,
+    u1.profile_pic AS user1_profile_pic,
     r.user2_id,
+    u2.names AS user2_name,
+    u2.profile_pic AS user2_profile_pic,
     r.created_at,
-    COALESCE((SELECT content FROM messages WHERE room_id = r.id ORDER BY sent_at DESC LIMIT 1), '') AS last_message,
-    COALESCE((SELECT sent_at FROM messages WHERE room_id = r.id ORDER BY sent_at DESC LIMIT 1), r.created_at) AS last_message_time
+    (SELECT content FROM messages WHERE room_id = r.id ORDER BY sent_at DESC LIMIT 1) AS last_message,
+    (SELECT sent_at FROM messages WHERE room_id = r.id ORDER BY sent_at DESC LIMIT 1) AS last_message_time
 FROM
     rooms r
+JOIN users u1 ON r.user1_id = u1.id
+JOIN users u2 ON r.user2_id = u2.id
 WHERE
     r.user1_id = $1 OR r.user2_id = $1
 ORDER BY
@@ -97,7 +150,11 @@ ORDER BY
 type GetRoomChatByUserIdRow struct {
 	ID              uuid.UUID
 	User1ID         uuid.UUID
+	User1Name       string
+	User1ProfilePic sql.NullString
 	User2ID         uuid.UUID
+	User2Name       string
+	User2ProfilePic sql.NullString
 	CreatedAt       time.Time
 	LastMessage     string
 	LastMessageTime time.Time
@@ -115,7 +172,11 @@ func (q *Queries) GetRoomChatByUserId(ctx context.Context, user1ID uuid.UUID) ([
 		if err := rows.Scan(
 			&i.ID,
 			&i.User1ID,
+			&i.User1Name,
+			&i.User1ProfilePic,
 			&i.User2ID,
+			&i.User2Name,
+			&i.User2ProfilePic,
 			&i.CreatedAt,
 			&i.LastMessage,
 			&i.LastMessageTime,

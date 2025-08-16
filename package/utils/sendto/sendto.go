@@ -13,8 +13,8 @@ import (
 const (
 	SMTPHost     = "sandbox.smtp.mailtrap.io"
 	SMTPPort     = "465"
-	SMTPUsername = "0f856f53638897"
-	SMTPPassword = "69b7a0dc9abfbe"
+	SMTPUsername = "aa469aaed33bdf"
+	SMTPPassword = "3768c8717b0dfd"
 )
 
 type EmailAddress struct {

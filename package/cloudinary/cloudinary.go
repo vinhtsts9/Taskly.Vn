@@ -5,6 +5,8 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"mime/multipart"
+	"strings"
 
 	"bytes"
 
@@ -47,7 +49,7 @@ func (c *CloudinaryService) UploadImageFromURLToCloudinary(imageUrl string) (str
 }
 
 // Hàm upload ảnh từ file
-func (c *CloudinaryService) UploadImageToCloudinaryFromReader(file io.Reader, folder string) (string, error) {
+func (c *CloudinaryService) UploadImageToCloudinaryFromReader(file io.Reader, folder string, resourceType string) (string, error) {
 	// Kiểm tra xem Cloudinary đã được khởi tạo hay chưa
 	if c.cld == nil {
 		return "", fmt.Errorf("cloudinary not initialized")
@@ -55,14 +57,48 @@ func (c *CloudinaryService) UploadImageToCloudinaryFromReader(file io.Reader, fo
 
 	// Upload file từ io.Reader lên Cloudinary
 	resp, err := c.cld.Upload.Upload(context.Background(), file, uploader.UploadParams{
-		Folder: folder, // Chọn thư mục lưu trữ trên Cloudinary (tùy chỉnh theo yêu cầu)
+		Folder:       folder,       // Chọn thư mục lưu trữ trên Cloudinary (tùy chỉnh theo yêu cầu)
+		ResourceType: resourceType, // Thêm ResourceType để phân biệt ảnh/video/raw
 	})
 	if err != nil {
 		return "", fmt.Errorf("failed to upload image to Cloudinary: %w", err)
 	}
 
-	// Trả về URL của ảnh đã upload
+	// Trả về URL của file đã upload
 	return resp.SecureURL, nil
+}
+
+// Hàm upload nhiều file từ multipart.FileHeader
+func (c *CloudinaryService) UploadMultipleFiles(files []*multipart.FileHeader, folder string) ([]string, error) {
+	if c.cld == nil {
+		return nil, errors.New("cloudinary not initialized")
+	}
+
+	var uploadedURLs []string
+
+	for _, fileHeader := range files {
+		file, err := fileHeader.Open()
+		if err != nil {
+			return nil, fmt.Errorf("failed to open file: %w", err)
+		}
+		defer file.Close()
+
+		// Xác định loại tài nguyên dựa trên Content-Type
+		resType := "auto" // Mặc định để Cloudinary tự động xác định
+		if strings.HasPrefix(fileHeader.Header.Get("Content-Type"), "image/") {
+			resType = "image"
+		} else if strings.HasPrefix(fileHeader.Header.Get("Content-Type"), "video/") {
+			resType = "video"
+		}
+
+		url, err := c.UploadImageToCloudinaryFromReader(file, folder, resType) // Sử dụng tên hàm gốc
+		if err != nil {
+			return nil, fmt.Errorf("failed to upload file \"%s\": %w", fileHeader.Filename, err)
+		}
+		uploadedURLs = append(uploadedURLs, url)
+	}
+
+	return uploadedURLs, nil
 }
 
 // Hàm upload nhiều ảnh từ file local lên Cloudinary

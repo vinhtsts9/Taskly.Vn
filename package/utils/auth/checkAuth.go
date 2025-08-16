@@ -47,15 +47,15 @@ func CheckAuthForWebsocket(token string) (*model.User, error) {
 	return &User, nil
 }
 
-func GetUserFromContext(ctx *gin.Context) *model.User {
+func GetUserFromContext(ctx *gin.Context) *model.UserToken {
 	claimsValue := ctx.Request.Context().Value("claims")
 	claims, ok := claimsValue.(*PayloadClaims)
 	if !ok {
 		global.Logger.Sugar().Error("Claims are not of type PayloadClaims")
-		return &model.User{}
+		return &model.UserToken{}
 	}
 
-	return &model.User{
+	return &model.UserToken{
 		ID:       claims.UserID,
 		UserType: claims.UserType,
 	}

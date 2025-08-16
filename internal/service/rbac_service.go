@@ -11,7 +11,7 @@ import (
 type IRBACService interface {
 	// Quản lý permissions
 	CreatePermission(ctx context.Context, arg database.CreatePermissionParams) (database.Permission, error)
-	GetPermissionsByRoleID(ctx context.Context, roleID int32) ([]database.Permission, error)
+	GetPermissionsByRoleID(ctx context.Context, roleID uuid.UUID) ([]database.Permission, error)
 	GetPermissionsByUserID(ctx context.Context, userID uuid.UUID) ([]database.Permission, error)
 
 	// Quản lý roles

@@ -11,3 +11,7 @@ sql:
         overrides:
           - db_type: "numeric"
             go_type: "float64"
+          - db_type: "text[]"
+            go_type:
+              import: "github.com/lib/pq"
+              type: "StringArray"

@@ -19,5 +19,6 @@ func (r *ChatRouter) InitChatRouter(Router *gin.RouterGroup) {
 		private.POST("/create-room", chatController.CreateRoom)
 		private.POST("/send", chatController.SetChatHistory)
 		private.GET("/history/:room_id", chatController.GetChatHistory)
+		private.POST("/room-exists", chatController.RoomExists)
 	}
 }

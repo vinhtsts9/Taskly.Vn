@@ -2,6 +2,7 @@ package impl
 
 import (
 	"context"
+	"database/sql"
 	"time"
 
 	"Taskly.com/m/internal/database"
@@ -20,14 +21,41 @@ func NewChatService(store database.Store) *sChatService {
 }
 
 // 1. Tạo phòng chat (CreateRoom)
-func (s *sChatService) CreateRoom(ctx context.Context, user1ID, user2ID uuid.UUID) (model.Room, error) {
-	room, err := s.store.CreateRoom(ctx, database.CreateRoomParams{
-		User1ID: user1ID,
-		User2ID: user2ID,
+func (s *sChatService) CreateRoom(ctx context.Context, user1ID, user2ID uuid.UUID, content string) (model.Room, error) {
+	var room model.Room
+	err := s.store.ExecTx(ctx, func(q *database.Queries) error {
+		var err error
+		roomRs, err := s.store.CreateRoom(ctx, database.CreateRoomParams{
+			Column1: user1ID,
+			Column2: user2ID,
+		})
+		if err != nil {
+			return err
+		}
+		room = model.Room{
+			ID:        roomRs.ID,
+			User1ID:   roomRs.User1ID,
+			User2ID:   roomRs.User2ID,
+			CreatedAt: roomRs.CreatedAt,
+		}
+
+		_, err = s.store.SetChatHistory(ctx, database.SetChatHistoryParams{
+			RoomID:     room.ID,
+			SenderID:   user1ID,
+			ReceiverID: user2ID,
+			Content:    content,
+		})
+		if err != nil {
+			return err
+		}
+
+		return nil
 	})
+
 	if err != nil {
 		return model.Room{}, err
 	}
+
 	return model.Room{
 		ID:        room.ID,
 		User1ID:   room.User1ID,
@@ -47,12 +75,12 @@ func (s *sChatService) GetRoomInfo(ctx context.Context, roomID uuid.UUID) (model
 		User1: model.UserInfo{
 			ID:         roomInfo.User1ID,
 			Name:       roomInfo.User1Name,
-			ProfilePic: utils.PtrIfValid(roomInfo.User1ProfilePic),
+			ProfilePic: utils.PtrStringIfValid(roomInfo.User1ProfilePic),
 		},
 		User2: model.UserInfo{
 			ID:         roomInfo.User2ID,
 			Name:       roomInfo.User2Name,
-			ProfilePic: utils.PtrIfValid(roomInfo.User2ProfilePic),
+			ProfilePic: utils.PtrStringIfValid(roomInfo.User2ProfilePic),
 		},
 	}, nil
 }
@@ -112,11 +140,35 @@ func (s *sChatService) GetRoomChatByUserId(ctx context.Context, userID uuid.UUID
 		result = append(result, model.RoomWithLastMessage{
 			ID:              r.ID,
 			User1ID:         r.User1ID,
+			User1Name:       r.User1Name,
+			User1ProfilePic: utils.PtrStringIfValid(r.User1ProfilePic),
 			User2ID:         r.User2ID,
+			User2Name:       r.User2Name,
+			User2ProfilePic: utils.PtrStringIfValid(r.User2ProfilePic),
 			CreatedAt:       r.CreatedAt,
 			LastMessage:     r.LastMessage,
 			LastMessageTime: r.LastMessageTime,
 		})
 	}
 	return result, nil
+}
+
+// 5. Kiểm tra phòng tồn tại
+func (s *sChatService) CheckRoomExist(ctx context.Context, user1ID, user2ID uuid.UUID) (model.Room, error) {
+	exists, err := s.store.CheckRoomExist(ctx, database.CheckRoomExistParams{
+		Column1: user1ID,
+		Column2: user2ID,
+	})
+	if err == sql.ErrNoRows {
+		return model.Room{}, nil
+	} else if err != nil {
+		return model.Room{}, err
+	} else {
+		return model.Room{
+			ID:        exists.ID,
+			User1ID:   exists.User1ID,
+			User2ID:   exists.User2ID,
+			CreatedAt: exists.CreatedAt,
+		}, nil
+	}
 }

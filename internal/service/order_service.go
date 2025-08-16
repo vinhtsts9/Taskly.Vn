@@ -2,7 +2,6 @@ package service
 
 import (
 	"context"
-	"net/url"
 
 	model "Taskly.com/m/internal/models"
 	"github.com/google/uuid"
@@ -11,13 +10,13 @@ import (
 type IOrderService interface {
 
 	// 1. Tạo đơn hàng mới
-	CreateOrder(ctx context.Context, input model.CreateOrderParams) (model.OrderResult, error)
+	CreateOrder(ctx context.Context, input model.CreateOrderParams,buyerID uuid.UUID) (model.OrderResult, error)
 
 	// 1b. Tạo đơn và sinh URL thanh toán VNPAY
-	CreateOrderAndGenerateVNPayURL(ctx context.Context, input model.CreateOrderParams, vnpayService IVNPayService) (string, error)
+	// CreateOrderAndGenerateVNPayURL(ctx context.Context, input model.CreateOrderParams, vnpayService IVNPayService) (string, error)
 
 	// 1c. Xử lý callback từ VNPAY
-	HandleVNPayCallback(ctx context.Context, params url.Values, vnpayService IVNPayService) error
+	// HandleVNPayCallback(ctx context.Context, params url.Values, vnpayService IVNPayService) error
 
 	// 2. Lấy danh sách đơn hàng của user
 	ListOrdersByUser(ctx context.Context, userID uuid.UUID) ([]model.OrderResult, error)

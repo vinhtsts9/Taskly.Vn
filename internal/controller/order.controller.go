@@ -3,11 +3,13 @@ package controller
 import (
 	"net/http"
 
+	"Taskly.com/m/global"
 	model "Taskly.com/m/internal/models"
 	"Taskly.com/m/internal/service"
 	"Taskly.com/m/package/utils/auth"
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
+	"go.uber.org/zap"
 )
 
 type OrderController struct {
@@ -27,44 +29,45 @@ func (ctl *OrderController) CreateOrder(c *gin.Context) {
 	var input model.CreateOrderParams
 	if err := c.ShouldBindJSON(&input); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid input"})
+		global.Logger.Error("Invalid input for creating order", zap.Error(err))
 		return
 	}
 
-	order, err := ctl.svc.CreateOrder(c, input)
+	order,err := ctl.svc.CreateOrder(c, input, auth.GetUserFromContext(c).ID)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to create order"})
+		global.Logger.Error("Failed to create order", zap.Error(err))
 		return
 	}
-
-	c.JSON(http.StatusOK, order)
+	c.JSON(http.StatusOK, gin.H{"message": "Order created successfully", "order": order})
 }
 
 // 1b. Tạo đơn hàng và lấy link thanh toán VNPay
-func (ctl *OrderController) CreateOrderAndGetVNPayURL(c *gin.Context) {
-	var input model.CreateOrderParams
-	if err := c.ShouldBindJSON(&input); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid input"})
-		return
-	}
+// func (ctl *OrderController) CreateOrderAndGetVNPayURL(c *gin.Context) {
+// 	var input model.CreateOrderParams
+// 	if err := c.ShouldBindJSON(&input); err != nil {
+// 		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid input"})
+// 		return
+// 	}
 
-	url, err := ctl.svc.CreateOrderAndGenerateVNPayURL(c, input, ctl.vnpayService)
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to create order or generate VNPay URL"})
-		return
-	}
+// 	url, err := ctl.svc.CreateOrderAndGenerateVNPayURL(c, input, ctl.vnpayService)
+// 	if err != nil {
+// 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to create order or generate VNPay URL"})
+// 		return
+// 	}
 
-	c.JSON(http.StatusOK, gin.H{"payment_url": url})
-}
+// 	c.JSON(http.StatusOK, gin.H{"payment_url": url})
+// }
 
-// 1c. Xử lý callback từ VNPay
-func (ctl *OrderController) HandleVNPayCallback(c *gin.Context) {
-	if err := ctl.svc.HandleVNPayCallback(c, c.Request.URL.Query(), ctl.vnpayService); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-		return
-	}
+// // 1c. Xử lý callback từ VNPay
+// func (ctl *OrderController) HandleVNPayCallback(c *gin.Context) {
+// 	if err := ctl.svc.HandleVNPayCallback(c, c.Request.URL.Query(), ctl.vnpayService); err != nil {
+// 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+// 		return
+// 	}
 
-	c.JSON(http.StatusOK, gin.H{"message": "Payment verified and order updated"})
-}
+// 	c.JSON(http.StatusOK, gin.H{"message": "Payment verified and order updated"})
+// }
 
 // 2. Lấy danh sách đơn theo user
 func (ctl *OrderController) ListOrdersByUser(c *gin.Context) {

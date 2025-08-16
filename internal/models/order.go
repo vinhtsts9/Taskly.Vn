@@ -18,12 +18,17 @@ type Order struct {
 }
 
 type CreateOrderParams struct {
-	GigID        uuid.UUID  `json:"gig_id" binding:"required"`
-	BuyerID      uuid.UUID  `json:"buyer_id" binding:"required"`
-	SellerID     uuid.UUID  `json:"seller_id" binding:"required"`
-	TotalPrice   float64    `json:"total_price" binding:"required,gte=0"`
-	DeliveryDate *time.Time `json:"delivery_date,omitempty"` // optional
+	GigID        uuid.UUID     `json:"gig_id" binding:"required"`
+	SellerID     uuid.UUID     `json:"seller_id" binding:"required"`
+	DeliveryDate *time.Time    `json:"delivery_date,omitempty"`                                    // optional
+	PackageTier  string        `json:"package_tier" binding:"required,oneof=basic standard premium"` // Tên gói dịch vụ
+	Answers      []AnswerParam `json:"answers,omitempty"`                                            // New field for answers
 }
+type AnswerParam struct {
+	QuestionID uuid.UUID `json:"question_id" binding:"required"`
+	Answer     string    `json:"answer" binding:"required"`
+}
+
 
 type UpdateOrderStatusParams struct {
 	ID     uuid.UUID `json:"id" binding:"required"`
@@ -40,3 +45,4 @@ type OrderResult struct {
 	OrderDate    time.Time  `json:"order_date"`
 	DeliveryDate *time.Time `json:"delivery_date,omitempty"`
 }
+
