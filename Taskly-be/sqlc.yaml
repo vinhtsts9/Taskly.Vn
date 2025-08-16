@@ -1,0 +1,17 @@
+version: "2"
+sql:
+  - engine: "postgresql"
+    queries: "sql/queries"
+    schema: "sql/schema"
+    gen:
+      go:
+        package: "database"
+        emit_interface: true
+        out: "internal/database"
+        overrides:
+          - db_type: "numeric"
+            go_type: "float64"
+          - db_type: "text[]"
+            go_type:
+              import: "github.com/lib/pq"
+              type: "StringArray"

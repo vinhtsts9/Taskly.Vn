@@ -1,6 +1,8 @@
 # Environment files
-*.env
-app.env
+aTaskly-be/*.env
+aTaskly-be/app.env
 
 # Node.js dependencies
-aTaskly-fe/
+aTaskly-fe/*.env
+aTaskly-fe/app.env
+aTaskly-fe/node_modules/
