@@ -1,0 +1,44 @@
+/* src/components/Marketplace.css */
+.marketplace-section {
+  padding: 64px 32px;
+}
+
+.marketplace-section h2 {
+  font-size: 2.5rem;
+  color: #404145;
+  margin-bottom: 2rem;
+}
+
+.category-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 30px;
+}
+
+.category-item {
+  text-align: center;
+  cursor: pointer;
+  color: inherit;
+  text-decoration: none;
+}
+
+.category-icon-placeholder {
+  width: 64px;
+  height: 64px;
+  background-color: #e4e5e7;
+  border-radius: 50%;
+  margin: 0 auto 1rem auto;
+  border-bottom: 3px solid #c7c8ca;
+}
+
+.category-item:hover .category-icon-placeholder {
+  background-color: #1dbf73;
+  border-bottom-color: #189a5e;
+}
+
+.category-item h3 {
+  color: #62646a;
+  font-weight: 600;
+  border-top: 1px solid #e4e5e7;
+  padding-top: 1rem;
+} 

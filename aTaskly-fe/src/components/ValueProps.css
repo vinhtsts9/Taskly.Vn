@@ -1,0 +1,59 @@
+/* src/components/ValueProps.css */
+.value-props-section {
+  display: flex;
+  align-items: center;
+  gap: 40px;
+  padding: 64px 32px;
+  background-color: #f1fdf7;
+}
+
+.value-props-content {
+  flex: 1;
+}
+
+.value-props-content h2 {
+  font-size: 2.5rem;
+  color: #404145;
+  margin-bottom: 2rem;
+}
+
+.value-props-content ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.value-props-content li {
+  margin-bottom: 1.5rem;
+}
+
+.value-props-content h3 {
+  font-size: 1.2rem;
+  color: #404145;
+  margin-bottom: 0.5rem;
+  display: flex;
+  align-items: center;
+}
+
+.value-props-content h3::before {
+  content: '✓'; /* Checkmark icon */
+  color: #1dbf73;
+  font-size: 1.5rem;
+  margin-right: 1rem;
+}
+
+.value-props-content p {
+  color: #62646a;
+  line-height: 1.6;
+}
+
+.value-props-media {
+  flex: 1;
+}
+
+.media-placeholder {
+  width: 100%;
+  height: 400px;
+  background-color: #e4e5e7;
+  border-radius: 4px;
+} 

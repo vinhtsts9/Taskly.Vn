@@ -1,0 +1,124 @@
+/* src/components/Hero.css */
+/* Taskly Hero - bản sắc riêng */
+.hero {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 520px;
+  padding: 64px 24px;
+  color: #0b0f1a;
+  background: radial-gradient(1200px 500px at 10% 0%, #e6fff4 0%, transparent 60%),
+              radial-gradient(800px 400px at 90% 10%, #eaf1ff 0%, transparent 55%),
+              linear-gradient(180deg, #ffffff 0%, #f7f9fc 100%);
+}
+
+.hero__container {
+  width: 100%;
+  max-width: 880px;
+  text-align: center;
+}
+
+.hero__eyebrow {
+  display: inline-block;
+  font-size: 12px;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: #1dbf73;
+  font-weight: 800;
+  background: #e8f7f0;
+  padding: 6px 10px;
+  border-radius: 999px;
+  margin-bottom: 12px;
+}
+
+.hero__title {
+  font-size: clamp(28px, 6vw, 44px);
+  line-height: 1.15;
+  margin: 6px 0 10px;
+  font-weight: 800;
+  color: #0b0f1a;
+}
+
+.hero__subtitle {
+  font-size: clamp(14px, 2.3vw, 18px);
+  color: #4a5568;
+  margin: 0 auto 22px;
+  max-width: 740px;
+}
+
+.hero__search {
+  display: flex;
+  gap: 0;
+  justify-content: center;
+  margin: 20px auto 16px;
+}
+
+.hero__search input {
+  width: 100%;
+  max-width: 560px;
+  padding: 14px 14px 14px 14px;
+  border: 1px solid #dfe3eb;
+  border-right: none;
+  border-radius: 10px 0 0 10px;
+  outline: none;
+  font-size: 15px;
+  background: #fff;
+}
+
+.hero__search input:focus {
+  border-color: #b4bcc9;
+}
+
+.hero__search button {
+  padding: 14px 20px;
+  border: 1px solid #1dbf73;
+  border-radius: 0 10px 10px 0;
+  background: #1dbf73;
+  color: #fff;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.hero__chips {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  justify-content: center;
+  margin: 8px 0 18px;
+}
+
+.hero__chips-label { color: #6b7280; font-size: 14px; }
+
+.hero__chips ul {
+  display: flex;
+  gap: 8px;
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.hero__chips li {
+  padding: 6px 12px;
+  border-radius: 999px;
+  border: 1px solid #e2e8f0;
+  background: #ffffff;
+  font-size: 13px;
+  color: #334155;
+  cursor: pointer;
+}
+
+.hero__chips li:hover {
+  background: #f1f5f9;
+}
+
+.hero__features {
+  display: flex;
+  gap: 14px;
+  justify-content: center;
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  color: #475569;
+  font-size: 14px;
+}

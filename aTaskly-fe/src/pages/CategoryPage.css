@@ -1,0 +1,26 @@
+/* src/pages/CategoryPage.css */
+.category-page {
+  padding: 32px;
+}
+
+.category-header {
+  margin-bottom: 32px;
+}
+
+.category-header h1 {
+  font-size: 3rem;
+  margin-bottom: 8px;
+  color: #222325;
+}
+
+.category-header p {
+  font-size: 1.1rem;
+  color: #62646a;
+  max-width: 600px;
+}
+
+.gig-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 32px;
+} 
