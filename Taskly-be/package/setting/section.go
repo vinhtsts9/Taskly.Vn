@@ -32,7 +32,7 @@ type ENV struct {
 	TokenHourLifespan uint   `mapstructure:"TOKEN_HOUR_LIFESPAN"`
 	JwtExpiration     string `mapstructure:"JWT_EXPIRATION"`
 	RefreshExpiration string `mapstructure:"REFRESH_EXPIRATION"`
-	ApiSecretJwt      string `mapstructure:"API_SECRET"`
+	ApiSecretJwt      string `mapstructure:"API_SECRET_JWT"`
 }
 type ServerSetting struct {
 	Port int    `mapstructure:"port"`
