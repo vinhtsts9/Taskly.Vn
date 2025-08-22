@@ -54,11 +54,11 @@ func (ctl *PaymentController) HandleVNPayCallback(c *gin.Context) {
        if err != nil {
 	       global.Logger.Sugar().Errorf("Error handling VNPay callback: %v", err)
 	       // Có thể redirect về FE với trạng thái thất bại
-	       feURL := "http://localhost:3000/payment-result?success=false&message=" + url.QueryEscape(err.Error())
+	       feURL := "https://taskly-vn.vercel.app/payment-result?success=false&message=" + url.QueryEscape(err.Error())
 	       c.Redirect(http.StatusFound, feURL)
 	       return
        }
        // Nếu thành công, redirect về FE với trạng thái thành công
-       feURL := "http://localhost:3000/payment-result?success=true"
+       feURL := "https://taskly-vn.vercel.app/payment-result?success=true"
        c.Redirect(http.StatusFound, feURL)
 }
