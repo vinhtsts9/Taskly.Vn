@@ -6,12 +6,12 @@ COPY . .
 
 RUN go mod download
 
-RUN go build -o social.network.com ./cmd/server
+RUN go build -o Taskly.com ./cmd/server
 
 FROM scratch
 
-COPY ./configs /configs
+COPY ./sql/schema /sql/schema
 
-COPY --from=builder /build/social.network.com /
+COPY --from=builder /build/Taskly.com /
 
-ENTRYPOINT [ "/social.network.com", "configs/local.yaml" ]
+ENTRYPOINT [ "/Taskly.com", "sql/schema" ]
