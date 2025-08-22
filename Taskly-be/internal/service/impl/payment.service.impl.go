@@ -146,7 +146,6 @@ func (s *paymentService) HandleVNPayCallback(ctx context.Context, params url.Val
 	if err != nil {
 		return fmt.Errorf("topup order with reference code %s not found: %w", refCode, err)
 	}
-	fmt.Println("Tao đã đi đến đây")
 	fmt.Println("status topup:", topupOrder.Status)
 	// 4. Kiểm tra để tránh xử lý lại giao dịch đã hoàn thành
 	if topupOrder.Status != "PENDING" {
@@ -163,13 +162,23 @@ func (s *paymentService) HandleVNPayCallback(ctx context.Context, params url.Val
 	// 6. Bắt đầu transaction để cập nhật CSDL
 	err = s.store.ExecTx(ctx, func(q *database.Queries) error {
 		// 6.1. Cập nhật trạng thái TopupOrder
-		_, err := q.UpdateTopupOrderStatus(ctx, database.UpdateTopupOrderStatusParams{
+		topupUpdated, err := q.UpdateTopupOrderStatus(ctx, database.UpdateTopupOrderStatusParams{
 			ID:     topupOrder.ID,
 			Status: "COMPLETED",
 		})
 		if err != nil {
 			return fmt.Errorf("failed to update topup order status: %w", err)
 		}
+
+		// cập nhật order
+		err = q.UpdateOrderStatus(ctx, database.UpdateOrderStatusParams{
+			ID:     topupUpdated.OrderID.UUID,
+			Status: "paid",
+		})
+		if err != nil {
+			return fmt.Errorf("failed to update order status: %w", err)
+		}
+
 		// 6.2. Ghi lại giao dịch thanh toán chi tiết
 		payload, _ := json.Marshal(params)
 		_, err = q.CreatePaymentTransaction(ctx, database.CreatePaymentTransactionParams{
