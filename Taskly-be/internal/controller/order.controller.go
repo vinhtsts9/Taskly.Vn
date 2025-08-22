@@ -33,7 +33,7 @@ func (ctl *OrderController) CreateOrder(c *gin.Context) {
 		return
 	}
 
-	order,err := ctl.svc.CreateOrder(c, input, auth.GetUserFromContext(c).ID)
+	order,err := ctl.svc.CreateOrder(c, input, auth.GetUserFromContext(c).ID,c.GetHeader("Idempotency-Key"))
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to create order"})
 		global.Logger.Error("Failed to create order", zap.Error(err))

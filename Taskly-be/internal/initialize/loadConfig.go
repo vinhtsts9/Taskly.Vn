@@ -40,7 +40,7 @@ func LoadConfig() {
 	if err := yamlViper.Unmarshal(&global.Config); err != nil {
 		fmt.Printf("unable to decode configuration %v", err)
 	}
-	if err := envViper.Unmarshal(&global.CloudinarySetting); err != nil {
+	if err := envViper.Unmarshal(&global.ENVSetting); err != nil {
 		fmt.Printf("unable to decode configuration %v", err)
 	}
 }

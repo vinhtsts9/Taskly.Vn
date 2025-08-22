@@ -14,8 +14,8 @@ func InitServiceInterface() {
 	service.InitOrderService(impl.NewOrderService(queries))
 	service.InitChatService(impl.NewChatService(queries))
 	service.InitDisputeService(impl.NewDisputeService(queries))
-	service.InitVNPayService(impl.NewVNPayService("", "", "", ""))
+	service.InitVNPayService(impl.NewVNPayService(global.ENVSetting.Vnp_TmnCode, global.ENVSetting.Vnp_HashSecret, global.ENVSetting.Vnp_Url, global.ENVSetting.Vnp_UrlCallBack))
 	service.InitRBACService(impl.NewRBACService(queries))
 	service.InitAdminUserService(impl.NewAdminUserService(queries))
-
+	service.InitPaymentService(impl.NewPaymentService(queries))
 }

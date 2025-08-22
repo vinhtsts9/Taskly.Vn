@@ -52,7 +52,6 @@ type CreateUserTxResult struct {
 type LoginInPut struct {
 	Email    string `json:"email" binding:"required,email"` // UNIQUE NOT NULL
 	Password string `json:"password" binding:"required"`    // NOT NULL
-	LoginIP  string `json:"login_ip,omitempty"`             // NOT NULL
 }
 type LoginOutput struct {
 	Token        string `json:"token"`         // JWT token

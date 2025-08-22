@@ -1,6 +1,6 @@
 -- name: CreateOrder :one
-INSERT INTO orders (gig_id, buyer_id, seller_id, total_price, delivery_date)
-VALUES ($1, $2, $3, $4, $5)
+INSERT INTO orders (gig_id, buyer_id, seller_id, total_price, delivery_date,idempotency_key,status)
+VALUES ($1, $2, $3, $4, $5,$6,'pending')
 RETURNING *;
 
 -- name: ListOrdersByUser :many
@@ -11,6 +11,11 @@ ORDER BY order_date DESC;
 -- name: GetOrderByID :one
 SELECT * FROM orders
 WHERE id = $1;
+
+-- name: GetOrderByIdempotency :one
+SELECT * FROM orders
+WHERE idempotency_key = $1;
+
 
 -- name: UpdateOrderStatus :exec
 UPDATE orders

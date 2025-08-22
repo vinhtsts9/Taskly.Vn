@@ -1,14 +1,15 @@
-import React, { useContext, useState, useEffect, useRef } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
-import { AuthContext } from '../context/AuthContext';
-import { apiGet } from '../utils/api';
-import './Header.css';
-import { isUserAdmin } from '../utils/auth';
+import React, { useContext, useState, useEffect, useRef } from "react";
+import { Link, useNavigate } from "react-router-dom";
+import { AuthContext } from "../context/AuthContext";
+import { apiGet } from "../utils/api";
+import "./Header.css";
+import { isUserAdmin } from "../utils/auth";
+import { registerPush } from "../utils/push";
 
 const Header = () => {
-  const { currentUser, logout } = useContext(AuthContext);
-  
-  const [searchTerm, setSearchTerm] = useState('');
+  const { currentUser, logout, logoutLoading } = useContext(AuthContext);
+
+  const [searchTerm, setSearchTerm] = useState("");
   const [suggestions, setSuggestions] = useState([]);
   const [showSuggestions, setShowSuggestions] = useState(false);
   const navigate = useNavigate();
@@ -29,27 +30,31 @@ const Header = () => {
       clearTimeout(handler);
     };
   }, [searchTerm]);
-  
+
   // Effect to handle clicks outside the search container
   useEffect(() => {
     const handleClickOutside = (event) => {
-        if (searchContainerRef.current && !searchContainerRef.current.contains(event.target)) {
-            setShowSuggestions(false);
-        }
+      if (
+        searchContainerRef.current &&
+        !searchContainerRef.current.contains(event.target)
+      ) {
+        setShowSuggestions(false);
+      }
     };
     document.addEventListener("mousedown", handleClickOutside);
     return () => {
-        document.removeEventListener("mousedown", handleClickOutside);
+      document.removeEventListener("mousedown", handleClickOutside);
     };
   }, []);
-
 
   const fetchSuggestions = async (keyword) => {
     try {
       // Sửa đổi endpoint và tham số
-      const data = await apiGet(`/gigs/search?search_term=${encodeURIComponent(keyword)}`);
+      const data = await apiGet(
+        `/gigs/search?search_term=${encodeURIComponent(keyword)}`
+      );
       // Định dạng phản hồi API đã thay đổi
-      const titles = data.map(item => item.title); 
+      const titles = data.map((item) => item.title);
       setSuggestions(titles);
       setShowSuggestions(true);
     } catch (error) {
@@ -70,8 +75,18 @@ const Header = () => {
   };
 
   const handleKeyDown = (event) => {
-    if (event.key === 'Enter') {
+    if (event.key === "Enter") {
       handleSearch(searchTerm);
+    }
+  };
+
+  const handleEnableNotifications = async () => {
+    try {
+      await registerPush();
+      alert("Bạn đã bật thông báo thành công!");
+    } catch (error) {
+      console.error("Không thể bật thông báo:", error);
+      alert("Đã xảy ra lỗi khi bật thông báo. Vui lòng thử lại.");
     }
   };
 
@@ -84,9 +99,9 @@ const Header = () => {
           </Link>
         </div>
         <div className="search-bar" ref={searchContainerRef}>
-          <input 
-            type="text" 
-            placeholder="Bạn đang tìm kiếm dịch vụ gì?" 
+          <input
+            type="text"
+            placeholder="Bạn đang tìm kiếm dịch vụ gì?"
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             onFocus={() => setShowSuggestions(true)}
@@ -106,20 +121,55 @@ const Header = () => {
         <ul className="nav-links">
           {currentUser ? (
             <>
-              {(() => { try { console.log('[Header] currentUser:', currentUser); } catch(_) {} return null; })()}
-              <li><Link to="/dashboard/orders">Đơn hàng</Link></li>
-              <li><Link to="/messages" className="messages-link">Tin nhắn</Link></li>
+              {(() => {
+                try {
+                  console.log("[Header] currentUser:", currentUser);
+                } catch (_) {}
+                return null;
+              })()}
+              <li>
+                <Link to="/dashboard/orders">Đơn hàng</Link>
+              </li>
+              <li>
+                <Link to="/messages" className="messages-link">
+                  Tin nhắn
+                </Link>
+              </li>
               {/* Hiển thị link Admin nếu user có quyền */}
-              { isUserAdmin(currentUser) && (
-                <li><Link to="/admin">Admin</Link></li>
+              {isUserAdmin(currentUser) && (
+                <li>
+                  <Link to="/admin">Admin</Link>
+                </li>
               )}
-              <li><span>Chào, {currentUser.names}</span></li>
-              <li><button onClick={logout} className="logout-button">Đăng xuất</button></li>
+              <li>
+                <button
+                  onClick={handleEnableNotifications}
+                  className="notification-button"
+                >
+                  Bật thông báo
+                </button>
+              </li>
+              <li>
+                <span>Chào, {currentUser.names}</span>
+              </li>
+              <li>
+                <button
+                  onClick={logout}
+                  className="logout-button"
+                  disabled={logoutLoading}
+                >
+                  {logoutLoading ? "Đang xử lý..." : "Đăng xuất"}
+                </button>
+              </li>
             </>
           ) : (
             <>
-              <li><Link to="/become-a-seller">Trở thành người bán</Link></li>
-              <li><Link to="/login">Đăng nhập</Link></li>
+              <li>
+                <Link to="/become-a-seller">Trở thành người bán</Link>
+              </li>
+              <li>
+                <Link to="/login">Đăng nhập</Link>
+              </li>
               <li>
                 <Link to="/register">
                   <button className="join-button">Tham gia</button>
@@ -133,4 +183,4 @@ const Header = () => {
   );
 };
 
-export default Header; 
+export default Header;

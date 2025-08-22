@@ -8,10 +8,12 @@ import (
 	"os/signal"
 	"syscall"
 
+	"Taskly.com/m/global"
 	"Taskly.com/m/internal/initialize"
 	"Taskly.com/m/internal/middlewares"
 	websocket "Taskly.com/m/ws"
 	"github.com/gin-gonic/gin"
+	"github.com/pressly/goose/v3"
 	"golang.org/x/sync/errgroup"
 )
 
@@ -23,6 +25,7 @@ var interruptSignals = []os.Signal{
 
 func main() {
 	r := initialize.Run()
+	Migrate()
 
 	cm := websocket.NewConnectionManager()
 
@@ -47,6 +50,17 @@ func main() {
 	}
 
 	log.Println("Server has stopped")
+}
+func Migrate() {
+    // đảm bảo InitPostgreSQL() đã được gọi trước
+    db := global.PostgreSQL
+
+    // chạy goose bằng pool có sẵn
+    if err := goose.Up(db, "sql/schema"); err != nil {
+        log.Fatalf("failed to run migration: %v", err)
+    }
+
+    log.Println("Migration successful ✅")
 }
 
 func runGinServer(ctx context.Context, waitGroup *errgroup.Group, r *gin.Engine) {

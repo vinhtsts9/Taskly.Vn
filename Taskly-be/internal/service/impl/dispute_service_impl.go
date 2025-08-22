@@ -45,7 +45,7 @@ func (s *sDisputeService) CreateDispute(ctx context.Context, input model.CreateD
 		OrderID:   d.OrderID,
 		UserID:    d.UserID,
 		Reason:    d.Reason,
-		Status:    d.Status.(string),
+		Status:    d.Status,
 		CreatedAt: d.CreatedAt,
 	}, nil
 }
@@ -63,7 +63,7 @@ func (s *sDisputeService) ListDisputes(ctx context.Context) ([]model.Dispute, er
 			OrderID:   d.OrderID,
 			UserID:    d.UserID,
 			Reason:    d.Reason,
-			Status:    d.Status.(string),
+			Status:    d.Status,
 			CreatedAt: d.CreatedAt,
 		})
 	}

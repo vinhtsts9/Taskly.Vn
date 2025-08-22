@@ -114,7 +114,7 @@ UPDATE disputes SET status = $2 WHERE id = $1
 
 type UpdateDisputeStatusParams struct {
 	ID     uuid.UUID
-	Status interface{}
+	Status string
 }
 
 func (q *Queries) UpdateDisputeStatus(ctx context.Context, arg UpdateDisputeStatusParams) error {

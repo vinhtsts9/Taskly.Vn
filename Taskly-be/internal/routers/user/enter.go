@@ -6,4 +6,5 @@ type UserRouterGroup struct {
 	ChatRouter
 	GigRouter
 	DisputeRouter
+	PaymentRouter
 }

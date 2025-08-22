@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useContext } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import "./QuestionAnswerPage.css";
+import { v4 as uuidv4 } from "uuid"; // Thêm thư viện uuid
 import { AuthContext } from "../context/AuthContext";
 import { apiPostAuth } from "../utils/api";
 
@@ -102,8 +103,15 @@ const QuestionAnswerPage = () => {
         delivery_date: deliveryDate.toISOString(),
         answers: answersPayload,
       };
+
+      // Tạo một idempotency key duy nhất cho yêu cầu này
+      const idempotencyKey = uuidv4();
+
       console.log("Order Payload:", orderPayload);
-      const newOrder = await apiPostAuth("/orders/create", orderPayload);
+      // Gửi yêu cầu với idempotency key
+      const newOrder = await apiPostAuth("/orders/create", orderPayload, {
+        idempotencyKey,
+      });
 
       // Thành công: hiển thị thông báo trong hộp thoại
       setSuccessMessage("Đơn hàng đã được tạo thành công!");
@@ -112,7 +120,9 @@ const QuestionAnswerPage = () => {
       setTimeout(() => {
         setIsModalOpen(false);
         // API trả về { message: "...", order: {...} }
-        navigate("/order-checkout", { state: { order: newOrder.order } });
+        navigate("/order-checkout", {
+          state: { order: newOrder.order, gig: gig },
+        });
       }, 2000);
     } catch (err) {
       const errorMessage =

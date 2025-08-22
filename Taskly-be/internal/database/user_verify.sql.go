@@ -35,7 +35,7 @@ type GetInfoOTPRow struct {
 	VerifyOtp     string
 	VerifyKey     string
 	VerifyHashKey string
-	VerifyType    VerifyTypeEnum
+	VerifyType    string
 	IsVerified    bool
 	IsDeleted     bool
 }
@@ -71,7 +71,7 @@ type InsertOTPVerifyParams struct {
 	VerifyKey     string
 	VerifyHashKey string
 	VerifyOtp     string
-	VerifyType    VerifyTypeEnum
+	VerifyType    string
 }
 
 func (q *Queries) InsertOTPVerify(ctx context.Context, arg InsertOTPVerifyParams) (uuid.UUID, error) {

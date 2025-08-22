@@ -27,6 +27,7 @@ CREATE TABLE user_roles (
     user_id UUID NOT NULL,
     role_id UUID NOT NULL,
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     PRIMARY KEY (user_id, role_id)
 );
 
@@ -35,6 +36,8 @@ CREATE TABLE user_roles (
 CREATE TABLE role_permissions (
     role_id UUID NULL,
     permission_id UUID NOT NULL,
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     PRIMARY KEY (role_id, permission_id)
 );
 

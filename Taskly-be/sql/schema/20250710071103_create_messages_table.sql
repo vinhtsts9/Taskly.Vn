@@ -16,7 +16,8 @@ CREATE TABLE rooms (
 -- Thêm index cho truy vấn theo user
 CREATE INDEX idx_rooms_user1_id ON rooms(user1_id);
 CREATE INDEX idx_rooms_user2_id ON rooms(user2_id);
-
+CREATE UNIQUE INDEX ux_rooms_user_pair
+ON rooms (LEAST(user1_id, user2_id), GREATEST(user1_id, user2_id));
 -- 2. Tạo bảng messages, gắn với room
 CREATE TABLE messages (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v1(),
