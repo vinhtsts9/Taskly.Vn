@@ -1,19 +1,12 @@
 server:
   port: 8080
   mode: "dev"
-postgresql: 
+postgresql:
   host: postgres
   port: 5432
   username: postgres
   password: 123456
   dbname: test
-log:
-  log_level: debug
-  file_log_name: ./storages/logs/dev.xxx.log
-  max_size: 500
-  max_backups: 3
-  max_age: 28
-  compress: true
 kafka:
   brokers: kafka:29092
 redis:
@@ -21,11 +14,6 @@ redis:
   port: 6379
   password:
   database: 0
-jwt:
-  TOKEN_HOUR_LIFESPAN: 1
-  JWT_EXPIRATION: 1h
-  REFRESH_EXPIRATION: 5h
-  API_SECRET: "xxx.yyy.zzz"
 elasticsearch:
   host: elasticsearch
   port: 9200

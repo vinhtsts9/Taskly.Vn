@@ -2,12 +2,23 @@ package initialize
 
 import (
 	"fmt"
+	"strings"
 
 	"Taskly.com/m/global"
 
 	"github.com/spf13/viper"
 )
 
+func LoadConfigRender() {
+	v := viper.New()
+	v.SetEnvKeyReplacer(strings.NewReplacer(".", "_"))
+	v.AutomaticEnv()
+
+	// KHÔNG cần BindEnv hết tất cả, Viper sẽ tự đọc
+	if err := v.Unmarshal(&global.ENVSetting); err != nil {
+    	panic(err)
+	}
+}
 func LoadConfig() {
 	// Load local.yaml
 	yamlViper := viper.New()

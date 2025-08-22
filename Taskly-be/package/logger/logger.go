@@ -18,7 +18,7 @@ func (l LoggerZap) GetZapLogger() *zap.Logger {
 	return l.zapLogger
 }
 
-func NewLogger(config setting.LogSetting) *LoggerZap {
+func NewLogger(config setting.ENV) *LoggerZap {
 	logLevel := config.LogLevel
 	var level zapcore.Level
 	switch logLevel {
@@ -35,11 +35,11 @@ func NewLogger(config setting.LogSetting) *LoggerZap {
 	}
 	encoder := getEncoderLog()
 	hook := lumberjack.Logger{
-		Filename:   config.FileName,
-		MaxSize:    config.MaxSize,
-		MaxBackups: config.MaxBackups,
-		MaxAge:     config.MaxAge,
-		Compress:   config.Compress,
+		Filename:   config.LogFileName,
+		MaxSize:    config.LogMaxSize,
+		MaxBackups: config.LogMaxBackups,
+		MaxAge:     config.LogMaxAge,
+		Compress:   config.LogCompress,
 	}
 	core := zapcore.NewCore(
 		encoder,
