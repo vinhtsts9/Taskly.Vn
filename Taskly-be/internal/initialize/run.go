@@ -8,7 +8,7 @@ import (
 )
 
 func Run() *gin.Engine {
-	LoadConfig()
+	LoadConfigRender()
 	InitLogger()
 	global.Logger.Info("Config ok", zap.String("ok", "success"))
 	InitPostgreSQL()
