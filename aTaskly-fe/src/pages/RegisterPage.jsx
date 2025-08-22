@@ -1,38 +1,76 @@
-import React, { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
-import './AuthForm.css';
-import { apiPost } from '../utils/api'; // Sửa lại import
+import React, { useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
+import "./AuthForm.css";
+import { apiPost } from "../utils/api";
 
 const RegisterPage = () => {
-  const [step, setStep] = useState(1); // 1: Enter email/phone, 2: Verify OTP, 3: Set Password
-  const [verifyKey, setVerifyKey] = useState('');
-  const [verifyType, setVerifyType] = useState('email'); // 'email' or 'phone'
-  const [otp, setOtp] = useState('');
-  const [password, setPassword] = useState('');
-  const [confirmPassword, setConfirmPassword] = useState('');
-  // Thêm state cho các trường thông tin bổ sung
-  const [names, setNames] = useState('');
-  const [userType, setUserType] = useState('buyer'); // Mặc định là 'buyer'
-  const [bio, setBio] = useState('');
-  const [error, setError] = useState('');
-  const [loading, setLoading] = useState(false); // Thêm trạng thái loading
+  const [step, setStep] = useState(1); // 1: Enter email/phone, 2: Verify OTP, 3: Details
+  const [verifyKey, setVerifyKey] = useState("");
+  const [verifyType, setVerifyType] = useState("email"); // 'email' or 'phone'
+  const [otp, setOtp] = useState("");
+  const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [names, setNames] = useState("");
+  const [userType, setUserType] = useState("buyer"); // Mặc định là 'buyer'
+  const [bio, setBio] = useState("");
+  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
-  const handleRegister = async (e) => {
+  // State và hàm cho việc kiểm tra độ mạnh mật khẩu
+  const [passwordValidation, setPasswordValidation] = useState({
+    minLength: false,
+    hasUpper: false,
+    hasLower: false,
+    hasNumber: false,
+    hasSpecial: false,
+  });
+
+  const validatePassword = (value) => {
+    setPassword(value);
+    const minLength = value.length >= 8;
+    const hasUpper = /[A-Z]/.test(value);
+    const hasLower = /[a-z]/.test(value);
+    const hasNumber = /[0-9]/.test(value);
+    const hasSpecial = /[!@#$%^&*(),.?":{}|<>]/.test(value);
+    setPasswordValidation({
+      minLength,
+      hasUpper,
+      hasLower,
+      hasNumber,
+      hasSpecial,
+    });
+  };
+
+  const handleSendOTP = async (e) => {
     e.preventDefault();
-    setError('');
+    setError("");
+
+    // --- CẢI TIẾN: Validate dữ liệu đầu vào ---
+    if (verifyType === "email" && !/^\S+@\S+\.\S+$/.test(verifyKey)) {
+      setError("Vui lòng nhập một địa chỉ email hợp lệ.");
+      return;
+    }
+    if (verifyType === "phone" && !/^\d{10,11}$/.test(verifyKey)) {
+      setError("Vui lòng nhập số điện thoại hợp lệ (10-11 chữ số).");
+      return;
+    }
+
     setLoading(true);
     try {
-      // Sửa lại payload để khớp với backend
-      await apiPost('/users/register', { 
-        verify_key: verifyKey, 
-        verify_type: verifyType 
+      await apiPost("/users/register", {
+        verify_key: verifyKey.trim().toLowerCase(),
+        verify_type: verifyType,
       });
       setStep(2);
     } catch (err) {
-      // Hiển thị chỉ phần JSON data của response lỗi
-      const rawResponse = err.response?.data ? JSON.stringify(err.response.data, null, 2) : err.message;
-      setError(rawResponse);
+      // --- CẢI TIẾN: Hiển thị lỗi thân thiện hơn ---
+      setError(
+        err.response?.data?.error ||
+          "Email hoặc SĐT này có thể đã được đăng ký."
+      );
     } finally {
       setLoading(false);
     }
@@ -40,15 +78,25 @@ const RegisterPage = () => {
 
   const handleVerifyOTP = async (e) => {
     e.preventDefault();
-    setError('');
+    setError("");
+
+    // --- CẢI TIẾN: Validate OTP ---
+    if (!/^\d{6}$/.test(otp)) {
+      setError("Mã OTP phải là 6 chữ số.");
+      return;
+    }
+
     setLoading(true);
     try {
-      await apiPost('/users/verify-otp', { verify_key: verifyKey, 
-        otp: otp });
+      await apiPost("/users/verify-otp", {
+        verify_key: verifyKey.trim().toLowerCase(),
+        otp,
+      });
       setStep(3);
     } catch (err) {
-      const errorMessage = err.response?.data?.error || err.message;
-      setError(errorMessage);
+      setError(
+        err.response?.data?.error || "Mã OTP không hợp lệ hoặc đã hết hạn."
+      );
     } finally {
       setLoading(false);
     }
@@ -56,26 +104,43 @@ const RegisterPage = () => {
 
   const handleCompleteRegistration = async (e) => {
     e.preventDefault();
-    if (password !== confirmPassword) {
-      setError('Mật khẩu không khớp.');
+    setError("");
+
+    // --- CẢI TIẾN: Validate các trường ---
+    if (!names.trim()) {
+      setError("Vui lòng nhập họ và tên của bạn.");
       return;
     }
-    setError('');
+    const isPasswordValid = Object.values(passwordValidation).every(Boolean);
+    if (!isPasswordValid) {
+      setError("Mật khẩu không đáp ứng các yêu cầu bảo mật.");
+      return;
+    }
+    if (password !== confirmPassword) {
+      setError(
+        "Mật khẩu và xác nhận mật khẩu không khớp. Vui lòng kiểm tra lại."
+      );
+      return;
+    }
+
     setLoading(true);
     try {
-      // Gửi đầy đủ thông tin để hoàn tất đăng ký
-      await apiPost('/users/complete-registration', { 
-        verify_key: verifyKey,
+      await apiPost("/users/update-password-register", {
+        verify_key: verifyKey.trim().toLowerCase(),
         user_password: password,
-        user_names: names,
+        user_names: names.trim(),
         user_type: userType,
-        bio: bio
+        bio: bio.trim(),
       });
-      alert('Đăng ký thành công! Bạn sẽ được chuyển đến trang đăng nhập.');
-      navigate('/login');
+      // --- CẢI TIẾN: Chuyển hướng với thông báo ---
+      navigate("/", {
+        state: { message: "Đăng ký thành công!" },
+      });
     } catch (err) {
-      const errorMessage = err.response?.data?.error || err.message;
-      setError(errorMessage);
+      setError(
+        err.response?.data?.error ||
+          "Không thể hoàn tất đăng ký. Vui lòng thử lại."
+      );
     } finally {
       setLoading(false);
     }
@@ -85,31 +150,57 @@ const RegisterPage = () => {
     switch (step) {
       case 1:
         return (
-          <form onSubmit={handleRegister}>
-            <p>Enter your email or phone number to start.</p>
+          <form onSubmit={handleSendOTP}>
+            <p>Nhập email hoặc số điện thoại để bắt đầu.</p>
             <div className="verify-type-selector">
-              <button type="button" className={verifyType === 'email' ? 'active' : ''} onClick={() => setVerifyType('email')}>Email</button>
-              <button type="button" className={verifyType === 'phone' ? 'active' : ''} onClick={() => setVerifyType('phone')}>Phone</button>
+              <button
+                type="button"
+                className={verifyType === "email" ? "active" : ""}
+                onClick={() => {
+                  setVerifyType("email");
+                  setVerifyKey("");
+                }}
+              >
+                Email
+              </button>
+              <button
+                type="button"
+                className={verifyType === "phone" ? "active" : ""}
+                onClick={() => {
+                  setVerifyType("phone");
+                  setVerifyKey("");
+                }}
+              >
+                Số điện thoại
+              </button>
             </div>
-            <label htmlFor="verifyKey">{verifyType === 'email' ? 'Email' : 'Phone Number'}</label>
+            <label htmlFor="verifyKey">
+              {verifyType === "email" ? "Địa chỉ Email" : "Số điện thoại"}
+            </label>
             <input
-              type={verifyType === 'email' ? 'email' : 'tel'}
+              type={verifyType === "email" ? "email" : "tel"}
               id="verifyKey"
               value={verifyKey}
               onChange={(e) => setVerifyKey(e.target.value)}
               required
               disabled={loading}
+              placeholder={
+                verifyType === "email" ? "your.email@example.com" : "0912345678"
+              }
             />
             <button type="submit" className="auth-button" disabled={loading}>
-              {loading ? 'Sending...' : 'Continue'}
+              {loading ? "Đang gửi..." : "Tiếp tục"}
             </button>
           </form>
         );
       case 2:
         return (
           <form onSubmit={handleVerifyOTP}>
-            <p>We've sent an OTP to {verifyKey}. Please enter it below.</p>
-            <label htmlFor="otp">Verification Code</label>
+            <p>
+              Chúng tôi đã gửi mã OTP đến <strong>{verifyKey}</strong>. Vui lòng
+              nhập vào bên dưới.
+            </p>
+            <label htmlFor="otp">Mã xác thực</label>
             <input
               type="text"
               id="otp"
@@ -117,9 +208,19 @@ const RegisterPage = () => {
               onChange={(e) => setOtp(e.target.value)}
               required
               disabled={loading}
+              maxLength="6"
+              placeholder="Mã gồm 6 chữ số"
             />
             <button type="submit" className="auth-button" disabled={loading}>
-              {loading ? 'Verifying...' : 'Verify'}
+              {loading ? "Đang xác thực..." : "Xác thực"}
+            </button>
+            <button
+              type="button"
+              className="link-button"
+              onClick={() => setStep(1)}
+              disabled={loading}
+            >
+              Quay lại
             </button>
           </form>
         );
@@ -127,7 +228,7 @@ const RegisterPage = () => {
         return (
           <form onSubmit={handleCompleteRegistration}>
             <p>Hoàn tất hồ sơ của bạn để bắt đầu.</p>
-            
+
             <label htmlFor="names">Họ và Tên</label>
             <input
               type="text"
@@ -138,10 +239,28 @@ const RegisterPage = () => {
               disabled={loading}
             />
 
-            <label>Loại tài khoản</label>
-            <div className="verify-type-selector">
-              <button type="button" className={userType === 'buyer' ? 'active' : ''} onClick={() => setUserType('buyer')}>Tôi là người mua</button>
-              <button type="button" className={userType === 'seller' ? 'active' : ''} onClick={() => setUserType('seller')}>Tôi là người bán</button>
+            <label>Bạn là:</label>
+            <div className="user-type-selection">
+              <label>
+                <input
+                  type="radio"
+                  name="userType"
+                  value="buyer"
+                  checked={userType === "buyer"}
+                  onChange={() => setUserType("buyer")}
+                />{" "}
+                Người mua
+              </label>
+              <label>
+                <input
+                  type="radio"
+                  name="userType"
+                  value="seller"
+                  checked={userType === "seller"}
+                  onChange={() => setUserType("seller")}
+                />{" "}
+                Người bán
+              </label>
             </div>
 
             <label htmlFor="bio">Tiểu sử ngắn</label>
@@ -155,25 +274,73 @@ const RegisterPage = () => {
             />
 
             <label htmlFor="password">Mật khẩu</label>
-            <input
-              type="password"
-              id="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              required
-              disabled={loading}
-            />
+            <div className="password-input-container">
+              <input
+                type={showPassword ? "text" : "password"}
+                id="password"
+                value={password}
+                onChange={(e) => validatePassword(e.target.value)}
+                required
+                disabled={loading}
+              />
+              <span
+                className="password-toggle-icon"
+                onClick={() => setShowPassword(!showPassword)}
+              >
+                {showPassword ? (
+                  <i className="fas fa-eye-slash"></i>
+                ) : (
+                  <i className="fas fa-eye"></i>
+                )}
+              </span>
+            </div>
+            {/* --- CẢI TIẾN: Hiển thị yêu cầu mật khẩu --- */}
+            <div className="password-rules">
+              <p className={passwordValidation.minLength ? "valid" : ""}>
+                ✓ Ít nhất 8 ký tự
+              </p>
+              <p className={passwordValidation.hasUpper ? "valid" : ""}>
+                ✓ Ít nhất 1 chữ hoa
+              </p>
+              <p className={passwordValidation.hasLower ? "valid" : ""}>
+                ✓ Ít nhất 1 chữ thường
+              </p>
+              <p className={passwordValidation.hasNumber ? "valid" : ""}>
+                ✓ Ít nhất 1 chữ số
+              </p>
+              <p className={passwordValidation.hasSpecial ? "valid" : ""}>
+                ✓ Ít nhất 1 ký tự đặc biệt
+              </p>
+            </div>
+
             <label htmlFor="confirmPassword">Xác nhận Mật khẩu</label>
-            <input
-              type="password"
-              id="confirmPassword"
-              value={confirmPassword}
-              onChange={(e) => setConfirmPassword(e.target.value)}
-              required
-              disabled={loading}
-            />
+            <div className="password-input-container">
+              <input
+                type={showConfirmPassword ? "text" : "password"}
+                id="confirmPassword"
+                value={confirmPassword}
+                onChange={(e) => setConfirmPassword(e.target.value)}
+                required
+                disabled={loading}
+              />
+              <span
+                className="password-toggle-icon"
+                onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+              >
+                {showConfirmPassword ? (
+                  <i className="fas fa-eye-slash"></i>
+                ) : (
+                  <i className="fas fa-eye"></i>
+                )}
+              </span>
+            </div>
+            {confirmPassword && password !== confirmPassword && (
+              <p className="field-error-message">
+                Mật khẩu xác nhận không khớp.
+              </p>
+            )}
             <button type="submit" className="auth-button" disabled={loading}>
-              {loading ? 'Đang tạo tài khoản...' : 'Hoàn tất & Tạo tài khoản'}
+              {loading ? "Đang tạo tài khoản..." : "Hoàn tất & Tạo tài khoản"}
             </button>
           </form>
         );
@@ -186,15 +353,15 @@ const RegisterPage = () => {
     <div className="auth-page">
       <div className="auth-form-container">
         <h1>Tham gia Taskly</h1>
-        {error && <pre className="error-message">{error}</pre>}
+        {error && <p className="error-message">{error}</p>}
         {renderStep()}
         <div className="form-footer">
-          <span>Already a member? </span>
-          <Link to="/login">Sign In</Link>
+          <span>Đã là thành viên? </span>
+          <Link to="/login">Đăng nhập</Link>
         </div>
       </div>
     </div>
   );
 };
 
-export default RegisterPage; 
+export default RegisterPage;

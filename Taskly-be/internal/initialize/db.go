@@ -20,13 +20,11 @@ func checkErrorPanicC(err error, errString string) {
 }
 
 // initPostgresConnection initializes a PostgreSQL connection using provided config
-func initPostgresConnection(pg setting.PostgreSQLSetting) *sql.DB {
+func initPostgresConnection(pg setting.ENV) *sql.DB {
 	// Format connection string
-	dsn := "postgres://%s:%s@%s:%d/%s?sslmode=disable"
-	connStr := fmt.Sprintf(dsn, pg.Username, pg.Password, pg.Host, pg.Port, pg.Dbname)
-
-	db, err := sql.Open("postgres", connStr)
-	checkErrorPanicC(err, fmt.Sprintf("Failed to initialize PostgreSQL for DB: %s", pg.Dbname))
+	dsn := pg.Database_url_external
+	db, err := sql.Open("postgres", dsn)
+	checkErrorPanicC(err, fmt.Sprintf("Failed to initialize PostgreSQL "))
 
 	// Optional: Test the connection
 	err = db.Ping()
@@ -37,7 +35,7 @@ func initPostgresConnection(pg setting.PostgreSQLSetting) *sql.DB {
 
 // InitPostgreSQL initializes the PostgreSQL connection and configures pooling
 func InitPostgreSQL() {
-	global.PostgreSQL = initPostgresConnection(global.Config.PostgreSQL)
+	global.PostgreSQL = initPostgresConnection(global.ENVSetting)
 	setPostgresPool()
 }
 

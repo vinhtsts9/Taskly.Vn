@@ -27,12 +27,25 @@ type Querier interface {
 	CreateGig(ctx context.Context, arg CreateGigParams) (Gig, error)
 	CreateGigPackage(ctx context.Context, arg CreateGigPackageParams) (GigPackage, error)
 	CreateGigRequirement(ctx context.Context, arg CreateGigRequirementParams) (GigRequirement, error)
+	// =========================
+	// Ledger entries
+	// =========================
+	CreateLedgerEntry(ctx context.Context, arg CreateLedgerEntryParams) (CreateLedgerEntryRow, error)
 	CreateOrder(ctx context.Context, arg CreateOrderParams) (Order, error)
+	// =========================
+	// Payment Transaction (provider callbacks)
+	// =========================
+	CreatePaymentTransaction(ctx context.Context, arg CreatePaymentTransactionParams) (CreatePaymentTransactionRow, error)
 	CreatePermission(ctx context.Context, arg CreatePermissionParams) (Permission, error)
 	CreateRole(ctx context.Context, roleName string) (Role, error)
 	CreateRoom(ctx context.Context, arg CreateRoomParams) (Room, error)
+	// =========================
+	// Topup / Payment intent
+	// =========================
+	CreateTopupOrder(ctx context.Context, arg CreateTopupOrderParams) (TopupOrder, error)
 	CreateUserBase(ctx context.Context, arg CreateUserBaseParams) (uuid.UUID, error)
 	CreateUserProfile(ctx context.Context, arg CreateUserProfileParams) (uuid.UUID, error)
+	CreateWallet(ctx context.Context, arg CreateWalletParams) (CreateWalletRow, error)
 	DeleteService(ctx context.Context, id uuid.UUID) error
 	DeleteUserBase(ctx context.Context, userBaseID uuid.UUID) error
 	GetAnswersByOrderID(ctx context.Context, id uuid.UUID) ([]Answer, error)
@@ -41,10 +54,14 @@ type Querier interface {
 	GetDisputeByID(ctx context.Context, id uuid.UUID) (Dispute, error)
 	GetDisputeByOrderID(ctx context.Context, orderID uuid.UUID) (Dispute, error)
 	GetGigAndPackagesForOrder(ctx context.Context, id uuid.UUID) (GetGigAndPackagesForOrderRow, error)
-	GetGigPackagesByGigID(ctx context.Context, gigID uuid.UUID) ([]GigPackage, error)
-	GetGigRequirementsByGigID(ctx context.Context, gigID uuid.UUID) ([]GigRequirement, error)
+	GetGigPackagesByGigID(ctx context.Context, gigID uuid.UUID) ([]GetGigPackagesByGigIDRow, error)
+	GetGigRequirementsByGigID(ctx context.Context, gigID uuid.UUID) ([]GetGigRequirementsByGigIDRow, error)
 	GetInfoOTP(ctx context.Context, verifyHashKey string) (GetInfoOTPRow, error)
+	GetLastPendingTopupByOrder(ctx context.Context, orderID uuid.NullUUID) (TopupOrder, error)
+	GetLedgerEntriesByWallet(ctx context.Context, walletID uuid.NullUUID) ([]GetLedgerEntriesByWalletRow, error)
 	GetOrderByID(ctx context.Context, id uuid.UUID) (Order, error)
+	GetOrderByIdempotency(ctx context.Context, idempotencyKey string) (Order, error)
+	GetPaymentTransactionByProviderTx(ctx context.Context, arg GetPaymentTransactionByProviderTxParams) (GetPaymentTransactionByProviderTxRow, error)
 	GetPermissionsByRoleID(ctx context.Context, roleID uuid.UUID) ([]Permission, error)
 	GetPermissionsByUserID(ctx context.Context, userID uuid.UUID) ([]Permission, error)
 	GetRoleIdByRoleName(ctx context.Context, roleName string) (uuid.UUID, error)
@@ -52,9 +69,13 @@ type Querier interface {
 	GetRoomChatByUserId(ctx context.Context, user1ID uuid.UUID) ([]GetRoomChatByUserIdRow, error)
 	GetRoomInfo(ctx context.Context, id uuid.UUID) (GetRoomInfoRow, error)
 	GetService(ctx context.Context, id uuid.UUID) (GetServiceRow, error)
+	GetTopupByIdempotencyKeyAndOrder(ctx context.Context, arg GetTopupByIdempotencyKeyAndOrderParams) (TopupOrder, error)
+	GetTopupOrderByReference(ctx context.Context, referenceCode string) (TopupOrder, error)
 	GetUserBaseToCheckLogin(ctx context.Context, email string) (GetUserBaseToCheckLoginRow, error)
 	GetUserByID(ctx context.Context, id uuid.UUID) (User, error)
 	GetUserInfoToSetToken(ctx context.Context, userBaseID uuid.UUID) (GetUserInfoToSetTokenRow, error)
+	GetWalletByUserID(ctx context.Context, userID uuid.UUID) (GetWalletByUserIDRow, error)
+	GetWalletForUpdateByUser(ctx context.Context, userID uuid.UUID) (GetWalletForUpdateByUserRow, error)
 	InsertOTPVerify(ctx context.Context, arg InsertOTPVerifyParams) (uuid.UUID, error)
 	ListDisputes(ctx context.Context) ([]Dispute, error)
 	ListOrdersByUser(ctx context.Context, buyerID uuid.UUID) ([]Order, error)
@@ -69,8 +90,11 @@ type Querier interface {
 	UpdateLogoutInfo(ctx context.Context, userBaseID uuid.UUID) error
 	UpdateOrderStatus(ctx context.Context, arg UpdateOrderStatusParams) error
 	UpdateService(ctx context.Context, arg UpdateServiceParams) (Gig, error)
+	UpdateTopupOrderStatus(ctx context.Context, arg UpdateTopupOrderStatusParams) (UpdateTopupOrderStatusRow, error)
+	UpdateTopupPaymentInfo(ctx context.Context, arg UpdateTopupPaymentInfoParams) (UpdateTopupPaymentInfoRow, error)
 	UpdateUserBaseToken(ctx context.Context, arg UpdateUserBaseTokenParams) error
 	UpdateUserVerificationStatus(ctx context.Context, verifyHashKey string) error
+	UpdateWalletBalance(ctx context.Context, arg UpdateWalletBalanceParams) (UpdateWalletBalanceRow, error)
 }
 
 var _ Querier = (*Queries)(nil)

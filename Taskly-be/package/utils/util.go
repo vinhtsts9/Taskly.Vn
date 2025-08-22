@@ -1,6 +1,7 @@
 package utils
 
 import (
+	"encoding/json"
 	"fmt"
 	"strconv"
 	"strings"
@@ -9,6 +10,7 @@ import (
 	"database/sql"
 
 	"github.com/google/uuid"
+	"github.com/sqlc-dev/pqtype"
 	"golang.org/x/crypto/bcrypt"
 )
 
@@ -97,4 +99,22 @@ func PtrStringIfValid(ns sql.NullString) *string {
 		return &ns.String
 	}
 	return nil
+}
+
+func WrapUUID(id uuid.UUID) uuid.NullUUID {
+	return uuid.NullUUID{
+		UUID:  id,
+		Valid: true,
+	}
+}
+
+func WrapJSON(v interface{}) pqtype.NullRawMessage {
+	if v == nil {
+		return pqtype.NullRawMessage{Valid: false}
+	}
+	b, err := json.Marshal(v)
+	if err != nil {
+		return pqtype.NullRawMessage{Valid: false}
+	}
+	return pqtype.NullRawMessage{RawMessage: b, Valid: true}
 }

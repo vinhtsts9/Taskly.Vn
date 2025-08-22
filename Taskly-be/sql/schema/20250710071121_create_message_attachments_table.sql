@@ -8,7 +8,8 @@ CREATE TABLE message_attachments (
     file_url TEXT NOT NULL,
     file_type VARCHAR(50), -- 'image', 'video', 'pdf', etc.
     file_name VARCHAR(255),
-    uploaded_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    uploaded_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 -- +goose StatementEnd
 

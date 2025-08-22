@@ -9,10 +9,17 @@ type Config struct {
 	KafkaBroker   Kafka             `mapstructure:"kafka"`
 	ElasticSearch ElasticSearch     `mapstructure:"elasticsearch"`
 }
-type Cloudinary struct {
-	CloudName string `mapstructure:"CLOUD_NAME"`
-	ApiKey    string `mapstructure:"API_KEY"`
-	ApiSecret string `mapstructure:"API_SECRET"`
+type ENV struct {
+	CloudName             string `mapstructure:"CLOUD_NAME"`
+	ApiKey                string `mapstructure:"API_KEY"`
+	ApiSecret             string `mapstructure:"API_SECRET"`
+	Database_url_internal string `mapstructure:"DATABASE_URL_INTERNAL"`
+	Database_url_external string `mapstructure:"DATABASE_URL_EXTERNAL"`
+	Vnp_TmnCode           string `mapstructure:"VNP_TMNCODE"`
+	Vnp_HashSecret        string `mapstructure:"VNP_HASHSECRET"`
+	Vnp_Url               string `mapstructure:"VNP_URL"`
+	Vnp_UrlCallBack       string `mapstructure:"VNP_URL_CALLBACK"`
+	Vnp_IpnUrl            string `mapstructure:"VNP_IPN_URL"`
 }
 type ServerSetting struct {
 	Port int    `mapstructure:"port"`

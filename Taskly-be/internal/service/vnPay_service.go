@@ -1,11 +1,13 @@
 package service
 
+import "net/url"
+
 type IVNPayService interface {
 	// Tạo URL thanh toán từ thông tin đơn hàng
-	// GeneratePaymentURL(orderID string, amount int) (string, error)
+	GeneratePaymentURL(orderID string, amount int, ipAddr string) (string, error)
 
 	// // Xác minh chữ ký callback từ VNPay
-	// VerifySignature(params url.Values) bool
+	VerifySignature(params url.Values) bool
 }
 
 var (

@@ -27,8 +27,12 @@ func NewOrderService(store database.Store) *sOrderService {
 }
 
 // 1. Tạo đơn hàng mới
-func (s *sOrderService) CreateOrder(ctx context.Context, input model.CreateOrderParams, buyerID uuid.UUID) (model.OrderResult, error) {
+func (s *sOrderService) CreateOrder(ctx context.Context, input model.CreateOrderParams, buyerID uuid.UUID,idempotency string) (model.OrderResult, error) {
 	var createdOrder database.Order
+	order,err := s.store.GetOrderByIdempotency(ctx, idempotency)
+	if err == nil {
+		return mapper.ConvertDBOrderToModel(order), nil
+	}
 
 	// Bước 1: Lấy dữ liệu gốc từ Database bằng gig_id do client cung cấp.
 	gigAndPackages, err := s.store.GetGigAndPackagesForOrder(ctx, input.GigID)
@@ -80,6 +84,7 @@ func (s *sOrderService) CreateOrder(ctx context.Context, input model.CreateOrder
 			SellerID:     gigAndPackages.UserID, // Sử dụng ID người bán thật từ DB
 			TotalPrice:   serverPrice, // Sử dụng giá từ server
 			DeliveryDate: utils.ToNullTime(input.DeliveryDate),
+			IdempotencyKey: idempotency,
 		})
 		if err != nil {
 			return err
@@ -88,7 +93,7 @@ func (s *sOrderService) CreateOrder(ctx context.Context, input model.CreateOrder
 		// 2. Lặp qua các câu trả lời và tạo chúng
 		for _, answer := range input.Answers {
 			_, err = q.CreateAnswer(ctx, database.CreateAnswerParams{
-				GigID:      input.GigID,
+				OrderID:      createdOrder.ID,
 				UserID:     buyerID, // Gắn câu trả lời với người mua
 				QuestionID: answer.QuestionID,
 				Answer:     answer.Answer,

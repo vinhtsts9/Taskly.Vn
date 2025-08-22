@@ -1,4 +1,4 @@
-GOOSE_DBSTRING ?= "postgres://postgres:123456@localhost:5432/test?sslmode=disable"
+GOOSE_DBSTRING ?= "postgresql://taskly_postgres_user:tE40ABIH3JZvjzMd1VZDl9Sox96amMBv@dpg-d2gb2u8dl3ps73f4bp0g-a.singapore-postgres.render.com/taskly_postgres"
 GOOSE_MIGRATION_DIR ?= sql/schema
 GOOSE_DRIVER ?= postgres
 APP_NAME = server

@@ -22,7 +22,7 @@ INSERT INTO gigs (
 ) VALUES (
   $1, $2, $3, $4, $5, $6, $7, NOW()
 )
-RETURNING id, user_id, title, status, created_at, category_id, image_url, updated_at, description, pricing_mode
+RETURNING id, user_id, title, category_id, image_url, description, pricing_mode, status, created_at, updated_at
 `
 
 type CreateGigParams struct {
@@ -50,13 +50,13 @@ func (q *Queries) CreateGig(ctx context.Context, arg CreateGigParams) (Gig, erro
 		&i.ID,
 		&i.UserID,
 		&i.Title,
-		&i.Status,
-		&i.CreatedAt,
 		pq.Array(&i.CategoryID),
 		pq.Array(&i.ImageUrl),
-		&i.UpdatedAt,
 		&i.Description,
 		&i.PricingMode,
+		&i.Status,
+		&i.CreatedAt,
+		&i.UpdatedAt,
 	)
 	return i, err
 }
@@ -67,7 +67,7 @@ INSERT INTO gig_packages (
 ) VALUES (
       $1, $2, $3, $4, $5
 )
-RETURNING id, gig_id, tier, price, delivery_time, options
+RETURNING id, gig_id, tier, price, delivery_time, options, created_at, updated_at
 `
 
 type CreateGigPackageParams struct {
@@ -94,6 +94,8 @@ func (q *Queries) CreateGigPackage(ctx context.Context, arg CreateGigPackagePara
 		&i.Price,
 		&i.DeliveryTime,
 		&i.Options,
+		&i.CreatedAt,
+		&i.UpdatedAt,
 	)
 	return i, err
 }
@@ -104,7 +106,7 @@ INSERT INTO gig_requirements (
 ) VALUES (
       $1, $2, $3
     )
-    RETURNING id, gig_id, question, required
+    RETURNING id, gig_id, question, required, created_at, updated_at
 `
 
 type CreateGigRequirementParams struct {
@@ -121,6 +123,8 @@ func (q *Queries) CreateGigRequirement(ctx context.Context, arg CreateGigRequire
 		&i.GigID,
 		&i.Question,
 		&i.Required,
+		&i.CreatedAt,
+		&i.UpdatedAt,
 	)
 	return i, err
 }
@@ -222,15 +226,24 @@ WHERE
         gig_id = $1
 `
 
-func (q *Queries) GetGigPackagesByGigID(ctx context.Context, gigID uuid.UUID) ([]GigPackage, error) {
+type GetGigPackagesByGigIDRow struct {
+	ID           uuid.UUID
+	GigID        uuid.UUID
+	Tier         string
+	Price        float64
+	DeliveryTime int32
+	Options      pqtype.NullRawMessage
+}
+
+func (q *Queries) GetGigPackagesByGigID(ctx context.Context, gigID uuid.UUID) ([]GetGigPackagesByGigIDRow, error) {
 	rows, err := q.db.QueryContext(ctx, getGigPackagesByGigID, gigID)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
-	var items []GigPackage
+	var items []GetGigPackagesByGigIDRow
 	for rows.Next() {
-		var i GigPackage
+		var i GetGigPackagesByGigIDRow
 		if err := rows.Scan(
 			&i.ID,
 			&i.GigID,
@@ -264,15 +277,22 @@ WHERE
         gig_id = $1
 `
 
-func (q *Queries) GetGigRequirementsByGigID(ctx context.Context, gigID uuid.UUID) ([]GigRequirement, error) {
+type GetGigRequirementsByGigIDRow struct {
+	ID       uuid.UUID
+	GigID    uuid.UUID
+	Question string
+	Required bool
+}
+
+func (q *Queries) GetGigRequirementsByGigID(ctx context.Context, gigID uuid.UUID) ([]GetGigRequirementsByGigIDRow, error) {
 	rows, err := q.db.QueryContext(ctx, getGigRequirementsByGigID, gigID)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
-	var items []GigRequirement
+	var items []GetGigRequirementsByGigIDRow
 	for rows.Next() {
-		var i GigRequirement
+		var i GetGigRequirementsByGigIDRow
 		if err := rows.Scan(
 			&i.ID,
 			&i.GigID,
@@ -459,7 +479,7 @@ SET
     status = $7,
     updated_at = NOW()
 WHERE id = $1
-RETURNING id, user_id, title, status, created_at, category_id, image_url, updated_at, description, pricing_mode
+RETURNING id, user_id, title, category_id, image_url, description, pricing_mode, status, created_at, updated_at
 `
 
 type UpdateServiceParams struct {
@@ -487,13 +507,13 @@ func (q *Queries) UpdateService(ctx context.Context, arg UpdateServiceParams) (G
 		&i.ID,
 		&i.UserID,
 		&i.Title,
-		&i.Status,
-		&i.CreatedAt,
 		pq.Array(&i.CategoryID),
 		pq.Array(&i.ImageUrl),
-		&i.UpdatedAt,
 		&i.Description,
 		&i.PricingMode,
+		&i.Status,
+		&i.CreatedAt,
+		&i.UpdatedAt,
 	)
 	return i, err
 }

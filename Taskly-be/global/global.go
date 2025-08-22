@@ -17,7 +17,7 @@ import (
 var (
 	Config            setting.Config
 	RedisOpt          asynq.RedisClientOpt
-	CloudinarySetting setting.Cloudinary
+	ENVSetting 		  setting.ENV
 	Logger            *zap.Logger
 	PostgreSQL        *sql.DB
 	Rdb               *redis.Client

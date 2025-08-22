@@ -13,17 +13,17 @@ import (
 
 const createAnswer = `-- name: CreateAnswer :one
 INSERT INTO answers (
-  gig_id,
+  order_id,
   user_id,
   question_id,
   answer
 ) VALUES (
   $1, $2, $3, $4
-) RETURNING id, gig_id, user_id, question_id, answer, created_at, updated_at
+) RETURNING id, order_id, user_id, question_id, answer, created_at, updated_at
 `
 
 type CreateAnswerParams struct {
-	GigID      uuid.UUID
+	OrderID    uuid.UUID
 	UserID     uuid.UUID
 	QuestionID uuid.UUID
 	Answer     string
@@ -31,7 +31,7 @@ type CreateAnswerParams struct {
 
 func (q *Queries) CreateAnswer(ctx context.Context, arg CreateAnswerParams) (Answer, error) {
 	row := q.db.QueryRowContext(ctx, createAnswer,
-		arg.GigID,
+		arg.OrderID,
 		arg.UserID,
 		arg.QuestionID,
 		arg.Answer,
@@ -39,7 +39,7 @@ func (q *Queries) CreateAnswer(ctx context.Context, arg CreateAnswerParams) (Ans
 	var i Answer
 	err := row.Scan(
 		&i.ID,
-		&i.GigID,
+		&i.OrderID,
 		&i.UserID,
 		&i.QuestionID,
 		&i.Answer,
@@ -52,7 +52,7 @@ func (q *Queries) CreateAnswer(ctx context.Context, arg CreateAnswerParams) (Ans
 const getAnswersByOrderID = `-- name: GetAnswersByOrderID :many
 SELECT 
   a.id, 
-  a.gig_id, 
+  a.order_id, 
   a.user_id, 
   a.question_id, 
   a.answer, 
@@ -74,7 +74,7 @@ func (q *Queries) GetAnswersByOrderID(ctx context.Context, id uuid.UUID) ([]Answ
 		var i Answer
 		if err := rows.Scan(
 			&i.ID,
-			&i.GigID,
+			&i.OrderID,
 			&i.UserID,
 			&i.QuestionID,
 			&i.Answer,

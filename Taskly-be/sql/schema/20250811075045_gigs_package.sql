@@ -6,7 +6,9 @@ CREATE TABLE gig_packages (
   tier VARCHAR(50) NOT NULL,
   price FLOAT8 NOT NULL CHECK (price >= 0),
   delivery_time INT NOT NULL CHECK (delivery_time > 0),
-  options JSONB DEFAULT '{}'::jsonb
+  options JSONB DEFAULT '{}'::jsonb,
+  created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 -- +goose StatementEnd
 

@@ -6,59 +6,15 @@ package database
 
 import (
 	"database/sql"
-	"database/sql/driver"
-	"fmt"
 	"time"
 
 	"github.com/google/uuid"
 	"github.com/sqlc-dev/pqtype"
 )
 
-type VerifyTypeEnum string
-
-const (
-	VerifyTypeEnumEmail VerifyTypeEnum = "email"
-	VerifyTypeEnumPhone VerifyTypeEnum = "phone"
-)
-
-func (e *VerifyTypeEnum) Scan(src interface{}) error {
-	switch s := src.(type) {
-	case []byte:
-		*e = VerifyTypeEnum(s)
-	case string:
-		*e = VerifyTypeEnum(s)
-	default:
-		return fmt.Errorf("unsupported scan type for VerifyTypeEnum: %T", src)
-	}
-	return nil
-}
-
-type NullVerifyTypeEnum struct {
-	VerifyTypeEnum VerifyTypeEnum
-	Valid          bool // Valid is true if VerifyTypeEnum is not NULL
-}
-
-// Scan implements the Scanner interface.
-func (ns *NullVerifyTypeEnum) Scan(value interface{}) error {
-	if value == nil {
-		ns.VerifyTypeEnum, ns.Valid = "", false
-		return nil
-	}
-	ns.Valid = true
-	return ns.VerifyTypeEnum.Scan(value)
-}
-
-// Value implements the driver Valuer interface.
-func (ns NullVerifyTypeEnum) Value() (driver.Value, error) {
-	if !ns.Valid {
-		return nil, nil
-	}
-	return string(ns.VerifyTypeEnum), nil
-}
-
 type Answer struct {
 	ID         uuid.UUID
-	GigID      uuid.UUID
+	OrderID    uuid.UUID
 	UserID     uuid.UUID
 	QuestionID uuid.UUID
 	Answer     string
@@ -67,9 +23,11 @@ type Answer struct {
 }
 
 type Category struct {
-	ID       int32
-	Name     string
-	ParentID sql.NullInt32
+	ID        int32
+	Name      string
+	ParentID  sql.NullInt32
+	CreatedAt time.Time
+	UpdatedAt time.Time
 }
 
 type Dispute struct {
@@ -77,7 +35,7 @@ type Dispute struct {
 	OrderID   uuid.UUID
 	UserID    uuid.UUID
 	Reason    string
-	Status    interface{}
+	Status    string
 	CreatedAt time.Time
 }
 
@@ -85,13 +43,13 @@ type Gig struct {
 	ID          uuid.UUID
 	UserID      uuid.UUID
 	Title       string
-	Status      string
-	CreatedAt   time.Time
 	CategoryID  []int32
 	ImageUrl    []string
-	UpdatedAt   time.Time
 	Description string
 	PricingMode string
+	Status      string
+	CreatedAt   time.Time
+	UpdatedAt   time.Time
 }
 
 type GigPackage struct {
@@ -101,13 +59,28 @@ type GigPackage struct {
 	Price        float64
 	DeliveryTime int32
 	Options      pqtype.NullRawMessage
+	CreatedAt    time.Time
+	UpdatedAt    time.Time
 }
 
 type GigRequirement struct {
-	ID       uuid.UUID
-	GigID    uuid.UUID
-	Question string
-	Required bool
+	ID        uuid.UUID
+	GigID     uuid.UUID
+	Question  string
+	Required  bool
+	CreatedAt time.Time
+	UpdatedAt time.Time
+}
+
+type LedgerEntry struct {
+	ID            uuid.UUID
+	WalletID      uuid.NullUUID
+	TransactionID uuid.NullUUID
+	AmountBigint  int64
+	BalanceAfter  int64
+	EntryType     string
+	CreatedAt     time.Time
+	UpdatedAt     time.Time
 }
 
 type Message struct {
@@ -126,17 +99,35 @@ type MessageAttachment struct {
 	FileType   sql.NullString
 	FileName   sql.NullString
 	UploadedAt sql.NullTime
+	CreatedAt  sql.NullTime
 }
 
 type Order struct {
-	ID           uuid.UUID
-	GigID        uuid.UUID
-	BuyerID      uuid.UUID
-	SellerID     uuid.UUID
-	Status       string
-	TotalPrice   float64
-	OrderDate    time.Time
-	DeliveryDate sql.NullTime
+	ID             uuid.UUID
+	GigID          uuid.UUID
+	BuyerID        uuid.UUID
+	SellerID       uuid.UUID
+	Status         string
+	TotalPrice     float64
+	OrderDate      time.Time
+	DeliveryDate   sql.NullTime
+	IdempotencyKey string
+	CreatedAt      time.Time
+	UpdatedAt      time.Time
+}
+
+type PaymentTransaction struct {
+	ID            uuid.UUID
+	TopupOrderID  uuid.NullUUID
+	Provider      string
+	ProviderTxID  string
+	AmountBigint  int64
+	Status        string
+	RemotePayload pqtype.NullRawMessage
+	Signature     sql.NullString
+	VerifiedAt    sql.NullTime
+	CreatedAt     time.Time
+	UpdatedAt     time.Time
 }
 
 type Permission struct {
@@ -150,11 +141,12 @@ type Permission struct {
 
 type Review struct {
 	ID        uuid.UUID
-	GigID     uuid.UUID
+	OrderID   uuid.UUID
 	Reviewer  uuid.UUID
 	Rating    int32
 	Comment   sql.NullString
 	CreatedAt sql.NullTime
+	UpdatedAt sql.NullTime
 }
 
 type Role struct {
@@ -167,6 +159,8 @@ type Role struct {
 type RolePermission struct {
 	RoleID       uuid.UUID
 	PermissionID uuid.UUID
+	CreatedAt    time.Time
+	UpdatedAt    time.Time
 }
 
 type Room struct {
@@ -174,6 +168,22 @@ type Room struct {
 	User1ID   uuid.UUID
 	User2ID   uuid.UUID
 	CreatedAt time.Time
+}
+
+type TopupOrder struct {
+	ID                 uuid.UUID
+	UserID             uuid.UUID
+	OrderID            uuid.NullUUID
+	ReferenceCode      string
+	IdempotencyKey     string
+	AmountBigint       int64
+	Currency           string
+	Provider           string
+	ProviderPaymentUrl sql.NullString
+	Status             string
+	CreatedAt          time.Time
+	UpdatedAt          time.Time
+	ExpiresAt          sql.NullTime
 }
 
 type User struct {
@@ -205,6 +215,7 @@ type UserRole struct {
 	UserID    uuid.UUID
 	RoleID    uuid.UUID
 	CreatedAt time.Time
+	UpdatedAt time.Time
 }
 
 type UserVerify struct {
@@ -212,9 +223,29 @@ type UserVerify struct {
 	VerifyKey     string
 	VerifyHashKey string
 	VerifyOtp     string
-	VerifyType    VerifyTypeEnum
+	VerifyType    string
 	IsDeleted     bool
 	IsVerified    bool
+	CreatedAt     time.Time
+	UpdatedAt     time.Time
+}
+
+type ViewPendingTopup struct {
+	ID            uuid.UUID
+	UserID        uuid.UUID
+	ReferenceCode string
+	AmountBigint  int64
+	Currency      string
+	Provider      string
+	Status        string
+	CreatedAt     time.Time
+	ExpiresAt     sql.NullTime
+}
+
+type Wallet struct {
+	ID            uuid.UUID
+	UserID        uuid.UUID
+	BalanceBigint int64
 	CreatedAt     time.Time
 	UpdatedAt     time.Time
 }

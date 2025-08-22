@@ -1,6 +1,6 @@
 -- name: CreateAnswer :one
 INSERT INTO answers (
-  gig_id,
+  order_id,
   user_id,
   question_id,
   answer
@@ -11,7 +11,7 @@ INSERT INTO answers (
 -- name: GetAnswersByOrderID :many
 SELECT 
   a.id, 
-  a.gig_id, 
+  a.order_id, 
   a.user_id, 
   a.question_id, 
   a.answer, 

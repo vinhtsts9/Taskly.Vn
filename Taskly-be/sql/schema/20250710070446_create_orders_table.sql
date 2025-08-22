@@ -10,7 +10,10 @@ CREATE TABLE orders (
     status VARCHAR(15) not null CHECK (status IN ('pending', 'active', 'delivered', 'completed', 'cancelled')) DEFAULT 'pending',
     total_price FLOAT8 NOT NULL CHECK (total_price >= 0),
     order_date TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    delivery_date TIMESTAMP
+    delivery_date TIMESTAMP,
+    idempotency_key VARCHAR(150) UNIQUE NOT NULL,
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 -- +goose StatementEnd
 

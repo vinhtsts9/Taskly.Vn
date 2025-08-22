@@ -10,7 +10,7 @@ import (
 type IOrderService interface {
 
 	// 1. Tạo đơn hàng mới
-	CreateOrder(ctx context.Context, input model.CreateOrderParams,buyerID uuid.UUID) (model.OrderResult, error)
+	CreateOrder(ctx context.Context, input model.CreateOrderParams,buyerID uuid.UUID,idempotency string) (model.OrderResult, error)
 
 	// 1b. Tạo đơn và sinh URL thanh toán VNPAY
 	// CreateOrderAndGenerateVNPayURL(ctx context.Context, input model.CreateOrderParams, vnpayService IVNPayService) (string, error)

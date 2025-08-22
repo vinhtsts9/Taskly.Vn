@@ -90,7 +90,7 @@ func (s *sUserService) Register(ctx context.Context, verifyKey string, verifyTyp
 
 	_, err = s.store.InsertOTPVerify(ctx, database.InsertOTPVerifyParams{
 		VerifyOtp:     strconv.Itoa(otp),
-		VerifyType:    database.VerifyTypeEnum(verifyType),
+		VerifyType:    (verifyType),
 		VerifyKey:     verifyKey,
 		VerifyHashKey: hashKey,
 	})
@@ -194,7 +194,7 @@ func (s *sUserService) Login(ctx context.Context, req model.LoginInPut) (*model.
 
 	_ = s.store.UpdateLoginInfo(ctx, database.UpdateLoginInfoParams{
 		Email:   req.Email,
-		LoginIp: req.LoginIP,
+		LoginIp: "",
 	})
 
 	userInfo, err := s.store.GetUserInfoToSetToken(ctx, userBase.UserBaseID)

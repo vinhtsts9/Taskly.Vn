@@ -24,17 +24,18 @@ func (q *Queries) AcceptOrderCompletion(ctx context.Context, id uuid.UUID) error
 }
 
 const createOrder = `-- name: CreateOrder :one
-INSERT INTO orders (gig_id, buyer_id, seller_id, total_price, delivery_date)
-VALUES ($1, $2, $3, $4, $5)
-RETURNING id, gig_id, buyer_id, seller_id, status, total_price, order_date, delivery_date
+INSERT INTO orders (gig_id, buyer_id, seller_id, total_price, delivery_date,idempotency_key,status)
+VALUES ($1, $2, $3, $4, $5,$6,'pending')
+RETURNING id, gig_id, buyer_id, seller_id, status, total_price, order_date, delivery_date, idempotency_key, created_at, updated_at
 `
 
 type CreateOrderParams struct {
-	GigID        uuid.UUID
-	BuyerID      uuid.UUID
-	SellerID     uuid.UUID
-	TotalPrice   float64
-	DeliveryDate sql.NullTime
+	GigID          uuid.UUID
+	BuyerID        uuid.UUID
+	SellerID       uuid.UUID
+	TotalPrice     float64
+	DeliveryDate   sql.NullTime
+	IdempotencyKey string
 }
 
 func (q *Queries) CreateOrder(ctx context.Context, arg CreateOrderParams) (Order, error) {
@@ -44,6 +45,7 @@ func (q *Queries) CreateOrder(ctx context.Context, arg CreateOrderParams) (Order
 		arg.SellerID,
 		arg.TotalPrice,
 		arg.DeliveryDate,
+		arg.IdempotencyKey,
 	)
 	var i Order
 	err := row.Scan(
@@ -55,12 +57,15 @@ func (q *Queries) CreateOrder(ctx context.Context, arg CreateOrderParams) (Order
 		&i.TotalPrice,
 		&i.OrderDate,
 		&i.DeliveryDate,
+		&i.IdempotencyKey,
+		&i.CreatedAt,
+		&i.UpdatedAt,
 	)
 	return i, err
 }
 
 const getOrderByID = `-- name: GetOrderByID :one
-SELECT id, gig_id, buyer_id, seller_id, status, total_price, order_date, delivery_date FROM orders
+SELECT id, gig_id, buyer_id, seller_id, status, total_price, order_date, delivery_date, idempotency_key, created_at, updated_at FROM orders
 WHERE id = $1
 `
 
@@ -76,12 +81,39 @@ func (q *Queries) GetOrderByID(ctx context.Context, id uuid.UUID) (Order, error)
 		&i.TotalPrice,
 		&i.OrderDate,
 		&i.DeliveryDate,
+		&i.IdempotencyKey,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+	)
+	return i, err
+}
+
+const getOrderByIdempotency = `-- name: GetOrderByIdempotency :one
+SELECT id, gig_id, buyer_id, seller_id, status, total_price, order_date, delivery_date, idempotency_key, created_at, updated_at FROM orders
+WHERE idempotency_key = $1
+`
+
+func (q *Queries) GetOrderByIdempotency(ctx context.Context, idempotencyKey string) (Order, error) {
+	row := q.db.QueryRowContext(ctx, getOrderByIdempotency, idempotencyKey)
+	var i Order
+	err := row.Scan(
+		&i.ID,
+		&i.GigID,
+		&i.BuyerID,
+		&i.SellerID,
+		&i.Status,
+		&i.TotalPrice,
+		&i.OrderDate,
+		&i.DeliveryDate,
+		&i.IdempotencyKey,
+		&i.CreatedAt,
+		&i.UpdatedAt,
 	)
 	return i, err
 }
 
 const listOrdersByUser = `-- name: ListOrdersByUser :many
-SELECT id, gig_id, buyer_id, seller_id, status, total_price, order_date, delivery_date FROM orders
+SELECT id, gig_id, buyer_id, seller_id, status, total_price, order_date, delivery_date, idempotency_key, created_at, updated_at FROM orders
 WHERE buyer_id = $1 OR seller_id = $1
 ORDER BY order_date DESC
 `
@@ -104,6 +136,9 @@ func (q *Queries) ListOrdersByUser(ctx context.Context, buyerID uuid.UUID) ([]Or
 			&i.TotalPrice,
 			&i.OrderDate,
 			&i.DeliveryDate,
+			&i.IdempotencyKey,
+			&i.CreatedAt,
+			&i.UpdatedAt,
 		); err != nil {
 			return nil, err
 		}

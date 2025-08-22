@@ -2,7 +2,7 @@
 -- +goose StatementBegin
 CREATE TABLE answers (
   id UUID PRIMARY KEY DEFAULT uuid_generate_v1(),
-  gig_id UUID NOT NULL,
+  order_id UUID NOT NULL,
   user_id UUID NOT NULL,
   question_id UUID NOT NULL,
   answer TEXT NOT NULL,

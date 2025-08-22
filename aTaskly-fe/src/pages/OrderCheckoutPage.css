@@ -1,0 +1,116 @@
+.order-checkout-page {
+  max-width: 600px;
+  margin: 40px auto;
+  padding: 20px;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+    "Helvetica Neue", Arial, sans-serif;
+  background-color: #fff;
+  border-radius: 12px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+}
+
+.order-checkout-page h1 {
+  text-align: center;
+  color: #222;
+  margin-bottom: 30px;
+  font-weight: 600;
+}
+
+.order-summary-card {
+  background-color: #f9f9f9;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  padding: 25px;
+  margin-bottom: 30px;
+}
+
+.order-summary-card h2 {
+  margin-top: 0;
+  border-bottom: 1px solid #eee;
+  padding-bottom: 15px;
+  margin-bottom: 20px;
+  font-size: 1.2em;
+  color: #444;
+  font-weight: 600;
+}
+
+.order-detail-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 15px;
+  font-size: 1em;
+}
+
+.order-detail-item span:first-child {
+  color: #666;
+}
+
+.order-detail-item span:last-child {
+  font-weight: 600;
+  color: #333;
+  text-align: right;
+}
+
+.package-tier {
+  text-transform: capitalize;
+  background-color: #e0f2fe;
+  color: #0c546a;
+  padding: 3px 8px;
+  border-radius: 12px;
+  font-size: 0.9em;
+}
+
+.order-summary-card hr {
+  border: 0;
+  border-top: 1px dashed #ddd;
+  margin: 20px 0;
+}
+
+.total-price span {
+  font-size: 1.4em;
+  color: #28a745;
+}
+
+.payment-actions {
+  text-align: center;
+}
+
+.vnpay-button {
+  background-color: #005baa; /* VNPay blue */
+  color: white;
+  border: none;
+  padding: 15px 30px;
+  font-size: 1.1em;
+  font-weight: bold;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background-color 0.3s ease, transform 0.2s ease;
+  width: 100%;
+}
+
+.vnpay-button:hover:not(:disabled) {
+  background-color: #004a8d;
+  transform: translateY(-2px);
+}
+
+.vnpay-button:disabled {
+  background-color: #cccccc;
+  cursor: not-allowed;
+}
+
+.payment-note {
+  margin-top: 15px;
+  font-size: 0.9em;
+  color: #777;
+}
+
+.error-message {
+  color: #dc3545;
+  background-color: #f8d7da;
+  border: 1px solid #f5c6cb;
+  padding: 12px;
+  border-radius: 5px;
+  margin-bottom: 20px;
+  text-align: center;
+}

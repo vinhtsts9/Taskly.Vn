@@ -8,9 +8,9 @@ import (
 )
 
 func NewCloudinary() {
-	cloud_name := global.CloudinarySetting.CloudName
-	api_key := global.CloudinarySetting.ApiKey
-	api_secret := global.CloudinarySetting.ApiSecret
+	cloud_name := global.ENVSetting.CloudName
+	api_key := global.ENVSetting.ApiKey
+	api_secret := global.ENVSetting.ApiSecret
 	fmt.Printf("cloudinary ,%s ,%s,%s", cloud_name, api_key, api_secret)
 	Cloudinary, err := cloudinary.InitCloudinary(cloud_name, api_key, api_secret)
 	if err != nil {
