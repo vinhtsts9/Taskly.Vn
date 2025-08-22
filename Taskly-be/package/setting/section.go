@@ -20,6 +20,7 @@ type ENV struct {
 	Vnp_Url               string `mapstructure:"VNP_URL"`
 	Vnp_UrlCallBack       string `mapstructure:"VNP_URL_CALLBACK"`
 	Vnp_IpnUrl            string `mapstructure:"VNP_IPN_URL"`
+	Redis_Url             string `mapstructure:"REDIS_URL"`
 }
 type ServerSetting struct {
 	Port int    `mapstructure:"port"`

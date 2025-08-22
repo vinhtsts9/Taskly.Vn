@@ -13,7 +13,7 @@ func Run() *gin.Engine {
 	global.Logger.Info("Config ok", zap.String("ok", "success"))
 	InitPostgreSQL()
 	//InitCasbin()
-	InitRedis()
+	InitRedisFromEnvString()
 	//InitKafka()
 	NewCloudinary()
 	//InitElasticSearch()
