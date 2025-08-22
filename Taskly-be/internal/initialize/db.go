@@ -23,6 +23,7 @@ func checkErrorPanicC(err error, errString string) {
 func initPostgresConnection(pg setting.ENV) *sql.DB {
 	// Format connection string
 	dsn := pg.Database_url_internal
+	fmt.Println("dsn pg", dsn)
 	db, err := sql.Open("postgres", dsn)
 	checkErrorPanicC(err, fmt.Sprintf("Failed to initialize PostgreSQL "))
 
