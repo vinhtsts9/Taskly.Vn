@@ -11,14 +11,40 @@ import (
 
 func LoadConfigRender() {
 	v := viper.New()
+
+	// map db.host -> DB_HOST, cloud_name -> CLOUD_NAME
 	v.SetEnvKeyReplacer(strings.NewReplacer(".", "_"))
 	v.AutomaticEnv()
 
-	// KHÔNG cần BindEnv hết tất cả, Viper sẽ tự đọc
+	// Bind explicit: local key -> ENV NAME
+	_ = v.BindEnv("cloud_name", "CLOUD_NAME")
+	_ = v.BindEnv("api_key", "API_KEY")
+	_ = v.BindEnv("api_secret", "API_SECRET")
+	_ = v.BindEnv("database_url_internal", "DATABASE_URL_INTERNAL")
+	_ = v.BindEnv("database_url_external", "DATABASE_URL_EXTERNAL")
+	_ = v.BindEnv("vnp_tmncode", "VNP_TMNCODE")
+	_ = v.BindEnv("vnp_hashsecret", "VNP_HASHSECRET")
+	_ = v.BindEnv("vnp_url", "VNP_URL")
+	_ = v.BindEnv("vnp_url_callback", "VNP_URL_CALLBACK")
+	_ = v.BindEnv("vnp_ipn_url", "VNP_IPN_URL")
+	_ = v.BindEnv("redis_url", "REDIS_URL")
+
+	// Log / JWT...
+	_ = v.BindEnv("log_level", "LOG_LEVEL")
+	_ = v.BindEnv("log_file_name", "LOG_FILE_NAME")
+	_ = v.BindEnv("token_hour_lifespan", "TOKEN_HOUR_LIFESPAN")
+	_ = v.BindEnv("api_secret_jwt", "API_SECRET") // note: you used API_SECRET twice in struct
+
+	// Unmarshal vào struct. IMPORTANT: mapstructure tags trong struct phải
+	// trùng với "local key" bạn bind ở trên (không bắt buộc in hoa).
 	if err := v.Unmarshal(&global.ENVSetting); err != nil {
-    	panic(err)
+		panic(fmt.Errorf("unable to decode env settings: %w", err))
 	}
+
+	// debug
+	fmt.Println("CLOUD_NAME =", v.GetString("cloud_name"))
 }
+
 func LoadConfig() {
 	// Load local.yaml
 	yamlViper := viper.New()
