@@ -19,10 +19,10 @@ type PayloadClaims struct {
 
 func GenTokenJWT(payload jwt.Claims) (string, error) {
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, payload)
-	return token.SignedString([]byte(global.Config.JWT.API_SECRET_KEY))
+	return token.SignedString([]byte(global.ENVSetting.ApiSecretJwt))
 }
 func CreateToken(userToken model.UserToken) (string, error) {
-	timeEx := global.Config.JWT.JWT_EXPIRATION
+	timeEx := global.ENVSetting.JwtExpiration
 	if timeEx == "" {
 		timeEx = "1h"
 	}
@@ -52,7 +52,7 @@ func CreateRefreshToken(userToken string) (string, error) {
 
 func ParseJwtToken(token string) (*PayloadClaims, error) {
 	parsedToken, err := jwt.ParseWithClaims(token, &PayloadClaims{}, func(t *jwt.Token) (interface{}, error) {
-		return []byte(global.Config.JWT.API_SECRET_KEY), nil
+		return []byte(global.ENVSetting.ApiSecretJwt), nil
 	})
 	if claims, ok := parsedToken.Claims.(*PayloadClaims); ok && parsedToken.Valid {
 		return claims, nil

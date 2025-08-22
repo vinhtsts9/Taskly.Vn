@@ -1,10 +1,8 @@
 package setting
 
 type Config struct {
-	Logger        LogSetting        `mapstructure:"log"`
 	Server        ServerSetting     `mapstructure:"server"`
 	Redis         RedisSetting      `mapstructure:"redis"`
-	JWT           JWTSetting        `mapstructure:"jwt"`
 	PostgreSQL    PostgreSQLSetting `mapstructure:"postgresql"`
 	KafkaBroker   Kafka             `mapstructure:"kafka"`
 	ElasticSearch ElasticSearch     `mapstructure:"elasticsearch"`
@@ -21,6 +19,20 @@ type ENV struct {
 	Vnp_UrlCallBack       string `mapstructure:"VNP_URL_CALLBACK"`
 	Vnp_IpnUrl            string `mapstructure:"VNP_IPN_URL"`
 	Redis_Url             string `mapstructure:"REDIS_URL"`
+
+	// Log
+	LogLevel      string `mapstructure:"LOG_LEVEL"`
+	LogFileName   string `mapstructure:"LOG_FILE_NAME"`
+	LogMaxSize    int    `mapstructure:"LOG_MAX_SIZE"`
+	LogMaxBackups int    `mapstructure:"LOG_MAX_BACKUPS"`
+	LogMaxAge     int    `mapstructure:"LOG_MAX_AGE"`
+	LogCompress   bool   `mapstructure:"LOG_COMPRESS"`
+
+	// JWT
+	TokenHourLifespan uint   `mapstructure:"TOKEN_HOUR_LIFESPAN"`
+	JwtExpiration     string `mapstructure:"JWT_EXPIRATION"`
+	RefreshExpiration string `mapstructure:"REFRESH_EXPIRATION"`
+	ApiSecretJwt      string `mapstructure:"API_SECRET"`
 }
 type ServerSetting struct {
 	Port int    `mapstructure:"port"`
@@ -38,20 +50,6 @@ type PostgreSQLSetting struct {
 	Username string `mapstructure:"username"`
 	Password string `mapstructure:"password"`
 	Dbname   string `mapstructure:"dbname"`
-}
-type LogSetting struct {
-	LogLevel   string `mapstructure:"log_level"`
-	FileName   string `mapstructure:"file_log_name"`
-	MaxSize    int    `mapstructure:"max_size"`
-	MaxBackups int    `mapstructure:"max_backups"`
-	MaxAge     int    `mapstructure:"max_age"`
-	Compress   bool   `mapstructure:"compress"`
-}
-type JWTSetting struct {
-	TOKEN_HOUR_LIFESPAN uint   `mapstructure:"TOKEN_HOUR_LIFESPAN"`
-	API_SECRET_KEY      string `mapstructure:"API_SECRET_KEY"`
-	JWT_EXPIRATION      string `mapstructure:"JWT_EXPIRATION"`
-	REFRESH_EXPIRATION  string `mapstructure:"REFRESH_EXPIRATION"`
 }
 type Kafka struct {
 	Brokers string `mapstructure:"brokers"`
