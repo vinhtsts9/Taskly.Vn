@@ -37,7 +37,7 @@ func InitRedisWithURL(redisURL string) {
 }
 
 // Hàm tiện ích để lấy Redis URL từ biến môi trường hoặc config
-func InitRedisFromEnvString() {
+func InitRedisProduction() {
     redisURL := global.ENVSetting.Redis_Url
     if strings.TrimSpace(redisURL) == "" {
         global.Logger.Error("Redis URL is empty in ENVSetting")
@@ -45,7 +45,7 @@ func InitRedisFromEnvString() {
     }
     InitRedisWithURL(redisURL)
 }
-func InitRedis() {
+func InitRedisDev() {
 	r := global.Config.Redis
 	rdb := redis.NewClient(&redis.Options{
 		Addr:     fmt.Sprintf("%s:%v", r.Host, r.Port),

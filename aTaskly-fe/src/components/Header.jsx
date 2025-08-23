@@ -164,9 +164,16 @@ const Header = () => {
             </>
           ) : (
             <>
-              <li>
-                <Link to="/become-a-seller">Trở thành người bán</Link>
-              </li>
+              {/* Nếu chưa là seller thì hiện 'Trở thành người bán', nếu là seller thì hiện 'Đăng dịch vụ' */}
+              {currentUser && currentUser.role ? (
+                <li>
+                  <Link to="/gigs/new">Đăng dịch vụ</Link>
+                </li>
+              ) : (
+                <li>
+                  <Link to="/become-a-seller">Trở thành người bán</Link>
+                </li>
+              )}
               <li>
                 <Link to="/login">Đăng nhập</Link>
               </li>

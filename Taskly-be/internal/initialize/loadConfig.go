@@ -9,7 +9,7 @@ import (
 	"github.com/spf13/viper"
 )
 
-func LoadConfigRender() {
+func LoadConfigProd() {
 	v := viper.New()
 
 	// map db.host -> DB_HOST, cloud_name -> CLOUD_NAME
@@ -45,7 +45,7 @@ func LoadConfigRender() {
 	fmt.Println("CLOUD_NAME =", v.GetString("cloud_name"))
 }
 
-func LoadConfig() {
+func LoadConfigDev() {
 	// Load local.yaml
 	yamlViper := viper.New()
 	yamlViper.AddConfigPath("./configs")

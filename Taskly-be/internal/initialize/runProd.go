@@ -7,13 +7,13 @@ import (
 	"go.uber.org/zap"
 )
 
-func Run() *gin.Engine {
-	LoadConfigRender()
+func RunProd() *gin.Engine {
+	LoadConfigProd()
 	InitLogger()
 	global.Logger.Info("Config ok", zap.String("ok", "success"))
-	InitPostgreSQL()
+	InitPostgreSQLProd()
 	//InitCasbin()
-	InitRedisFromEnvString()
+	InitRedisProduction()
 	//InitKafka()
 	NewCloudinary()
 	//InitElasticSearch()

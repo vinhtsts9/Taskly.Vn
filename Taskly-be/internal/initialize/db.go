@@ -6,7 +6,6 @@ import (
 	"time"
 
 	"Taskly.com/m/global"
-	"Taskly.com/m/package/setting"
 	_ "github.com/lib/pq"
 	"go.uber.org/zap"
 )
@@ -20,11 +19,11 @@ func checkErrorPanicC(err error, errString string) {
 }
 
 // initPostgresConnection initializes a PostgreSQL connection using provided config
-func initPostgresConnection(pg setting.ENV) *sql.DB {
+func initPostgresConnection(pg string) *sql.DB {
 	// Format connection string
-	dsn := pg.Database_url_internal
-	fmt.Println("dsn pg", dsn)
-	db, err := sql.Open("postgres", dsn)
+
+	fmt.Println("dsn pg", pg)
+	db, err := sql.Open("postgres", pg)
 	checkErrorPanicC(err, fmt.Sprintf("Failed to initialize PostgreSQL "))
 
 	// Optional: Test the connection
@@ -35,11 +34,14 @@ func initPostgresConnection(pg setting.ENV) *sql.DB {
 }
 
 // InitPostgreSQL initializes the PostgreSQL connection and configures pooling
-func InitPostgreSQL() {
-	global.PostgreSQL = initPostgresConnection(global.ENVSetting)
+func InitPostgreSQLProd() {
+	global.PostgreSQL = initPostgresConnection(global.ENVSetting.Database_url_internal)
 	setPostgresPool()
 }
-
+func InitPostgreSQLDev() {
+	global.PostgreSQL = initPostgresConnection(global.ENVSetting.Database_url_external)
+	setPostgresPool()
+}
 // setPostgresPool configures the database connection pooling settings
 func setPostgresPool() {
 	sqlDb := global.PostgreSQL
