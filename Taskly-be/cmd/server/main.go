@@ -23,7 +23,7 @@ var interruptSignals = []os.Signal{
 
 
 func main() {
-	r := initialize.Run()
+	r := initialize.RunProd()
 	//Migrate()
 
 	cm := websocket.NewConnectionManager()

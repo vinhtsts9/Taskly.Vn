@@ -33,6 +33,13 @@ type ENV struct {
 	JwtExpiration     string `mapstructure:"JWT_EXPIRATION"`
 	RefreshExpiration string `mapstructure:"REFRESH_EXPIRATION"`
 	ApiSecretJwt      string `mapstructure:"API_SECRET_JWT"`
+
+	// Mail
+	SMTP_HOST     string `mapstructure:"SMTP_HOST"`
+	SMTP_PORT     string `mapstructure:"SMTP_PORT"`
+	SMTP_USERNAME string `mapstructure:"SMTP_USERNAME"`
+	SMTP_PASSWORD string `mapstructure:"SMTP_PASSWORD"`
+	SMTP_FROM     string `mapstructure:"SMTP_FROM"`
 }
 type ServerSetting struct {
 	Port int    `mapstructure:"port"`
