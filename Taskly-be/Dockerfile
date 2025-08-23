@@ -1,15 +1,22 @@
-# Build
-FROM golang:1.21-alpine AS builder
+# ---------- Build stage ----------
+FROM golang:alpine AS builder
 WORKDIR /build
+
+# cài git + chứng chỉ CA
+RUN apk --no-cache add git ca-certificates
+
 COPY . .
+
 RUN go mod download
+RUN go build -o Taskly.com ./cmd/server
 
-ENV CGO_ENABLED=0 GOOS=linux
-RUN go build -ldflags="-s -w" -o /app ./cmd/server
+# ---------- Runtime stage ----------
+FROM scratch
 
-# Run (distroless static có sẵn CA)
-FROM gcr.io/distroless/static:nonroot
-WORKDIR /
-COPY --from=builder /app /app
-USER nonroot:nonroot
-ENTRYPOINT ["/app"]
+# copy certs từ builder sang scratch
+COPY --from=builder /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/
+
+COPY ./sql/schema /sql/schema
+COPY --from=builder /build/Taskly.com /
+
+ENTRYPOINT ["/Taskly.com", "sql/schema"]
