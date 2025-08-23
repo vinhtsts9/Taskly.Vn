@@ -34,6 +34,11 @@ func LoadConfigProd() {
 	_ = v.BindEnv("log_file_name", "LOG_FILE_NAME")
 	_ = v.BindEnv("token_hour_lifespan", "TOKEN_HOUR_LIFESPAN")
 	_ = v.BindEnv("api_secret_jwt", "API_SECRET_JWT") // note: you used API_SECRET twice in struct
+	
+    _ = v.BindEnv("smtp_host", "SMTP_HOST")
+    _ = v.BindEnv("smtp_port", "SMTP_PORT")
+    _ = v.BindEnv("smtp_username", "SMTP_USERNAME")
+    _ = v.BindEnv("smtp_password", "SMTP_PASSWORD")
 
 	// Unmarshal vào struct. IMPORTANT: mapstructure tags trong struct phải
 	// trùng với "local key" bạn bind ở trên (không bắt buộc in hoa).
