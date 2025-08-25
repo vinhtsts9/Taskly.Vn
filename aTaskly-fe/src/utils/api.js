@@ -23,6 +23,7 @@ const apiRequest = async (endpoint, method, data = null, options = {}) => {
   const headers = {};
   const fetchOptions = { method, headers };
 
+  console.log("env", import.meta.env);
   if (idempotencyKey) {
     headers["Idempotency-Key"] = idempotencyKey;
   }
