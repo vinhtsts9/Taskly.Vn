@@ -146,9 +146,24 @@ func (ctl *UserController) Logout(c *gin.Context) {
 	}
 
 	// Xóa cả hai cookie
-	c.SetCookie("token", "", -1, "/", "", false, true)
-	c.SetCookie("refresh_token", "", -1, "/", "", false, true)
-
+	http.SetCookie(c.Writer, &http.Cookie{
+    Name:     "token",
+    Value:    "",
+    Path:     "/",
+    MaxAge:   -1,
+    Secure:   true,
+    HttpOnly: true,
+    SameSite: http.SameSiteNoneMode,
+	})
+	http.SetCookie(c.Writer, &http.Cookie{
+    Name:     "refresh_token",
+    Value:    "",
+    Path:     "/",
+    MaxAge:   -1,
+    Secure:   true,
+    HttpOnly: true,
+    SameSite: http.SameSiteNoneMode,
+	})
 	c.JSON(http.StatusOK, gin.H{"message": "Logged out successfully"})
 }
 
