@@ -108,11 +108,26 @@ func (ctl *UserController) Login(c *gin.Context) {
 
 	// Thiết lập cookie cho Access Token (sống ngắn)
 	accessMaxAge := 3600 // 1 giờ
-	c.SetCookie("token", out.Token, accessMaxAge, "/", "", false, true)
-
+	http.SetCookie(c.Writer, &http.Cookie{
+        Name:     "token",
+        Value:    out.Token,
+        Path:     "/",
+        MaxAge:   accessMaxAge,
+        Secure:   true, // Bắt buộc khi SameSite=None
+        HttpOnly: true,
+        SameSite: http.SameSiteNoneMode, // Đây là chỗ quan trọng
+    })
 	// Thiết lập cookie cho Refresh Token (sống dài)
 	refreshMaxAge := 3600 * 24 * 7 // 7 ngày
-	c.SetCookie("refresh_token", out.RefreshToken, refreshMaxAge, "/", "", false, true)
+	http.SetCookie(c.Writer, &http.Cookie{
+        Name:     "refresh_token",
+        Value:    out.RefreshToken,
+        Path:     "/",
+        MaxAge:   refreshMaxAge,
+        Secure:   true,
+        HttpOnly: true,
+        SameSite: http.SameSiteNoneMode,
+    })
 
 	c.JSON(http.StatusOK, gin.H{"message": "Login successful"})
 }

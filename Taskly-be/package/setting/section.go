@@ -40,6 +40,9 @@ type ENV struct {
 	SMTP_USERNAME string `mapstructure:"SMTP_USERNAME"`
 	SMTP_PASSWORD string `mapstructure:"SMTP_PASSWORD"`
 	SMTP_FROM     string `mapstructure:"SMTP_FROM"`
+
+	Fe_api string `mapstructure:"FE_API"`
+	Be_api string `mapstructure:"BE_API"`
 }
 type ServerSetting struct {
 	Port int    `mapstructure:"port"`
