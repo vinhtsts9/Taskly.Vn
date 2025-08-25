@@ -39,6 +39,8 @@ func LoadConfigProd() {
     _ = v.BindEnv("smtp_port", "SMTP_PORT")
     _ = v.BindEnv("smtp_username", "SMTP_USERNAME")
     _ = v.BindEnv("smtp_password", "SMTP_PASSWORD")
+	_ = v.BindEnv("fe_api", "FE_API")
+	_ = v.BindEnv("be_api", "BE_API")
 
 	// Unmarshal vào struct. IMPORTANT: mapstructure tags trong struct phải
 	// trùng với "local key" bạn bind ở trên (không bắt buộc in hoa).
