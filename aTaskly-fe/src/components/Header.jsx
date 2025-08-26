@@ -149,9 +149,15 @@ const Header = () => {
                   Bật thông báo
                 </button>
               </li>
-              <li>
-                <span>Chào, {currentUser.names}</span>
-              </li>
+              {currentUser && currentUser.user_type.includes("seller") ? (
+                <li>
+                  <Link to="/gigs/new">Đăng dịch vụ</Link>
+                </li>
+              ) : (
+                <li>
+                  <Link to="/become-a-seller">Trở thành người bán</Link>
+                </li>
+              )}
               <li>
                 <button
                   onClick={logout}
@@ -164,16 +170,6 @@ const Header = () => {
             </>
           ) : (
             <>
-              {/* Nếu chưa là seller thì hiện 'Trở thành người bán', nếu là seller thì hiện 'Đăng dịch vụ' */}
-              {currentUser && currentUser.role ? (
-                <li>
-                  <Link to="/gigs/new">Đăng dịch vụ</Link>
-                </li>
-              ) : (
-                <li>
-                  <Link to="/become-a-seller">Trở thành người bán</Link>
-                </li>
-              )}
               <li>
                 <Link to="/login">Đăng nhập</Link>
               </li>
