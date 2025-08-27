@@ -11,7 +11,7 @@ import { AuthContext } from "../../context/AuthContext";
 import websocketService from "../../services/websocketService";
 import { apiGetAuth, apiPostAuth } from "../../utils/api";
 
-const ChatWindow = ({ selectedThread }) => {
+const ChatWindow = ({ selectedThread, setSelectedThread }) => {
   const [messages, setMessages] = useState([]);
   const [newMessage, setNewMessage] = useState("");
   const [chatPartner, setChatPartner] = useState(null);

@@ -40,7 +40,10 @@ const ChatContainer = ({ initialRoomId }) => {
         onSelectThread={handleSelectThread}
         initialRoomId={initialRoomId}
       />
-      <ChatWindow selectedThread={selectedThread} />
+      <ChatWindow
+        selectedThread={selectedThread}
+        setSelectedThread={setSelectedThread}
+      />
     </div>
   );
 };
