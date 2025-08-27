@@ -234,71 +234,59 @@ const ChatWindow = ({ selectedThread }) => {
       // Nếu là temp room, tạo room thật trước
       if (selectedThread.isTempRoom) {
         const response = await apiPostAuth("/chat/create-room", {
+          content: newMessage,
           user2_id: chatPartner.id,
         });
 
         if (response && response.id) {
-          // Gửi tin nhắn đầu tiên qua HTTP API (không qua WebSocket)
-          const messageResponse = await apiPostAuth("/chat/send", {
+          // Cập nhật thread với room_id thật
+          const updatedThread = {
+            ...selectedThread,
+            roomId: response.id,
+            type: "chat",
+            isTempRoom: false,
+          };
+
+          // Cập nhật selectedThread
+          setSelectedThread(updatedThread);
+
+          // Thêm tin nhắn vào danh sách local
+          const newMessageObj = {
+            id: messageResponse.id || `temp_${Date.now()}`,
             room_id: response.id,
             sender_id: currentUser.id,
             receiver_id: chatPartner.id,
             content: newMessage,
-          });
+            sent_at: new Date().toISOString(),
+            created_at: new Date().toISOString(),
+          };
 
-          if (messageResponse) {
-            // Cập nhật thread với room_id thật
-            const updatedThread = {
-              ...selectedThread,
-              roomId: response.id,
-              type: "chat",
-              isTempRoom: false,
-            };
+          setMessages((prev) => [...prev, newMessageObj]);
 
-            // Cập nhật selectedThread
-            setSelectedThread(updatedThread);
+          // Sau khi tạo room và gửi tin nhắn thành công, mới join WebSocket room
+          setTimeout(() => {
+            if (websocketService.isConnected()) {
+              websocketService.joinRoom(response.id);
+              currentRoomId.current = response.id;
 
-            // Thêm tin nhắn vào danh sách local
-            const newMessageObj = {
-              id: messageResponse.id || `temp_${Date.now()}`,
-              room_id: response.id,
-              sender_id: currentUser.id,
-              receiver_id: chatPartner.id,
-              content: newMessage,
-              sent_at: new Date().toISOString(),
-              created_at: new Date().toISOString(),
-            };
+              // Cập nhật thread để không còn là temp room nữa
+              const finalThread = {
+                ...updatedThread,
+                roomId: response.id,
+                type: "chat",
+                isTempRoom: false,
+              };
+              setSelectedThread(finalThread);
 
-            setMessages((prev) => [...prev, newMessageObj]);
+              // Reset state để có thể load lịch sử tin nhắn
+              setMessages([newMessageObj]); // Chỉ giữ tin nhắn vừa gửi
+              setHistoryCursor(null);
+              setHasMoreHistory(true);
 
-            // Sau khi tạo room và gửi tin nhắn thành công, mới join WebSocket room
-            setTimeout(() => {
-              if (websocketService.isConnected()) {
-                websocketService.joinRoom(response.id);
-                currentRoomId.current = response.id;
-
-                // Cập nhật thread để không còn là temp room nữa
-                const finalThread = {
-                  ...updatedThread,
-                  roomId: response.id,
-                  type: "chat",
-                  isTempRoom: false,
-                };
-                setSelectedThread(finalThread);
-
-                // Reset state để có thể load lịch sử tin nhắn
-                setMessages([newMessageObj]); // Chỉ giữ tin nhắn vừa gửi
-                setHistoryCursor(null);
-                setHasMoreHistory(true);
-
-                // Trigger load lịch sử tin nhắn cũ (nếu có)
-                handleLoadMore();
-              }
-            }, 500); // Delay 500ms để đảm bảo backend đã xử lý xong
-          } else {
-            console.error("Failed to send first message");
-            return;
-          }
+              // Trigger load lịch sử tin nhắn cũ (nếu có)
+              handleLoadMore();
+            }
+          }, 500); // Delay 500ms để đảm bảo backend đã xử lý xong
         } else {
           console.error("Failed to create chat room");
           return;
