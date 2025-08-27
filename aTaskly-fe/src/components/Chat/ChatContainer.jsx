@@ -1,7 +1,7 @@
-import React, { useState, useEffect } from 'react';
-import './ChatContainer.css';
-import ChatList from './ChatList';
-import ChatWindow from './ChatWindow';
+import React, { useState, useEffect } from "react";
+import "./ChatContainer.css";
+import ChatList from "./ChatList";
+import ChatWindow from "./ChatWindow";
 
 const ChatContainer = ({ initialRoomId }) => {
   const [selectedThread, setSelectedThread] = useState(null);
@@ -18,17 +18,17 @@ const ChatContainer = ({ initialRoomId }) => {
       // Thread tạm thời
       const tempThread = {
         roomId: null,
-        type: 'temp_chat',
+        type: "temp_chat",
         isTempRoom: true,
-        otherUser: initialRoomId.sellerInfo
+        otherUser: initialRoomId.sellerInfo,
       };
       setSelectedThread(tempThread);
     } else if (initialRoomId.roomId && initialRoomId.sellerInfo) {
       // Thread thật
       const realThread = {
         roomId: initialRoomId.roomId,
-        type: 'chat',
-        otherUser: initialRoomId.sellerInfo
+        type: "chat",
+        otherUser: initialRoomId.sellerInfo,
       };
       setSelectedThread(realThread);
     }
