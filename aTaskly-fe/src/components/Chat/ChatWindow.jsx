@@ -214,7 +214,7 @@ const ChatWindow = ({ selectedThread, setSelectedThread }) => {
 
     const nearBottom =
       container.scrollHeight - container.scrollTop - container.clientHeight <=
-      50;
+      200;
     // 50px tolerance (gần cuối thì coi như ở cuối)
 
     if (prevScrollHeightRef.current) {
