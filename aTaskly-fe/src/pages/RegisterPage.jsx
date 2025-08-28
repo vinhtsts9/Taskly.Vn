@@ -6,7 +6,7 @@ import { apiPost } from "../utils/api";
 const RegisterPage = () => {
   const [step, setStep] = useState(1); // 1: Enter email/phone, 2: Verify OTP, 3: Details
   const [verifyKey, setVerifyKey] = useState("");
-  const [verifyType, setVerifyType] = useState("email"); // 'email' or 'phone'
+  const verifyType = "email";
   const [otp, setOtp] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
@@ -53,10 +53,10 @@ const RegisterPage = () => {
       setError("Vui lòng nhập một địa chỉ email hợp lệ.");
       return;
     }
-    if (verifyType === "phone" && !/^\d{10,11}$/.test(verifyKey)) {
-      setError("Vui lòng nhập số điện thoại hợp lệ (10-11 chữ số).");
-      return;
-    }
+    // if (verifyType === "phone" && !/^\d{10,11}$/.test(verifyKey)) {
+    //   setError("Vui lòng nhập số điện thoại hợp lệ (10-11 chữ số).");
+    //   return;
+    // }
 
     setLoading(true);
     try {
@@ -162,16 +162,6 @@ const RegisterPage = () => {
                 }}
               >
                 Email
-              </button>
-              <button
-                type="button"
-                className={verifyType === "phone" ? "active" : ""}
-                onClick={() => {
-                  setVerifyType("phone");
-                  setVerifyKey("");
-                }}
-              >
-                Số điện thoại
               </button>
             </div>
             <label htmlFor="verifyKey">
