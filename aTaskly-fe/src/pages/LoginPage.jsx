@@ -30,7 +30,7 @@ const LoginPage = () => {
     setLoading(true);
     try {
       // Hàm login từ context sẽ gọi API và xử lý state
-      await login({ email: email, password: password });
+      await login({ email: email.trim().toLowerCase(), password: password });
       navigate("/"); // Điều hướng về trang chủ sau khi đăng nhập thành công
     } catch (err) {
       // Hàm login sẽ ném lỗi nếu API thất bại

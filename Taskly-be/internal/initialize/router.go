@@ -47,6 +47,7 @@ func InitRouter() *gin.Engine {
 		userRouter.InitGigRouter(MainGroup)
 		userRouter.InitDisputeRouter(MainGroup)
 		userRouter.InitChatRouter(MainGroup)
+		userRouter.InitChatBotRouter(MainGroup)
 		userRouter.InitPaymentRouter(MainGroup)
 	}
 	{

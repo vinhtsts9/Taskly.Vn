@@ -7,4 +7,5 @@ type UserRouterGroup struct {
 	GigRouter
 	DisputeRouter
 	PaymentRouter
+	ChatBotRouter
 }
