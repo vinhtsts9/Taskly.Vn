@@ -28,7 +28,7 @@ func main() {
 
 	cm := websocket.NewConnectionManager()
 
-	r.GET("/v1/2024/ws", middlewares.AuthenMiddleware(), middlewares.CasbinMiddleware(), func(c *gin.Context) {
+	r.GET("/v1/2024/ws", middlewares.AuthenMiddleware(), func(c *gin.Context) {
 		websocket.HandleConnections(c, cm)
 	})
 

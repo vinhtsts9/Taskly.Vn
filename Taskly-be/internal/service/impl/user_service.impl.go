@@ -71,7 +71,10 @@ func (s *sUserService) Register(ctx context.Context, verifyKey string, verifyTyp
 	// 5. Gửi OTP
 	switch verifyType {
 	case VerifyTypeEmail:
-		err := sendto.SendTextEmail([]string{verifyKey}, "Vinhtiensinh18@gmail.com", strconv.Itoa(otp))
+		// Quan trọng: Email 'from' phải là một "verified sender" trong tài khoản Brevo của bạn.
+		// Bạn nên lấy email này từ config thay vì hardcode.
+		fromEmail := "vinhtiensinh17@gmail.com" // <-- THAY THẾ BẰNG EMAIL ĐÃ XÁC THỰC CỦA BẠN
+		err := sendto.SendTextEmail([]string{verifyKey}, fromEmail, strconv.Itoa(otp))
 		if err != nil {
 			return fmt.Errorf("failed to send email: %w", err)
 		}

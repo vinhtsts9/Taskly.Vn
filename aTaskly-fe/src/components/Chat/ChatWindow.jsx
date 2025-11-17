@@ -209,17 +209,22 @@ const ChatWindow = ({ selectedThread, setSelectedThread }) => {
 
   // Effect to manage scroll position
   useLayoutEffect(() => {
-    if (messagesContainerRef.current) {
-      if (prevScrollHeightRef.current) {
-        // Adjust scroll position after loading more messages
-        messagesContainerRef.current.scrollTop =
-          messagesContainerRef.current.scrollHeight -
-          prevScrollHeightRef.current;
-        prevScrollHeightRef.current = null; // Reset ref
-      } else {
-        // Auto-scroll for new incoming messages
-        messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-      }
+    const container = messagesContainerRef.current;
+    if (!container) return;
+
+    const nearBottom =
+      container.scrollHeight - container.scrollTop - container.clientHeight <=
+      200;
+    // 50px tolerance (gần cuối thì coi như ở cuối)
+
+    if (prevScrollHeightRef.current) {
+      // Sau khi load thêm tin nhắn cũ
+      container.scrollTop =
+        container.scrollHeight - prevScrollHeightRef.current;
+      prevScrollHeightRef.current = null;
+    } else if (nearBottom) {
+      // Chỉ auto-scroll nếu user đang gần cuối
+      container.scrollTop = container.scrollHeight;
     }
   }, [messages]);
 

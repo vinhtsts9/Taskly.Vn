@@ -1,14 +1,35 @@
 package sendto
 
 import (
+	"bytes"
+	"encoding/json"
 	"fmt"
-	"net/smtp"
+	"io"
+	"net/http"
 	"strings"
 
 	"Taskly.com/m/global"
 
 	"go.uber.org/zap"
 )
+
+// Brevo API structs
+type BrevoSender struct {
+	Name  string `json:"name"`
+	Email string `json:"email"`
+}
+
+type BrevoRecipient struct {
+	Email string `json:"email"`
+	Name  string `json:"name,omitempty"`
+}
+
+type BrevoPayload struct {
+	Sender      BrevoSender      `json:"sender"`
+	To          []BrevoRecipient `json:"to"`
+	Subject     string           `json:"subject"`
+	HtmlContent string           `json:"htmlContent"`
+}
 
 type EmailAddress struct {
 	Address string `json:"address"`
@@ -35,40 +56,69 @@ func BuildMessage(email Mail) string {
 	return b.String()
 }
 
-// SendTextEmail gửi email dùng SMTP (Gmail App Password recommended).
+// SendTextEmail gửi email dùng Brevo API.
 // - to: danh sách email nhận
-// - from: địa chỉ from (nên trùng SMTP_USERNAME để tránh bị block)
+// - from: địa chỉ from (phải là sender đã được xác thực trên Brevo)
 func SendTextEmail(to []string, from string, otp string) error {
-	// lấy config từ env (không hardcode)
-	host := global.ENVSetting.SMTP_HOST
-	port := global.ENVSetting.SMTP_PORT
-	username := global.ENVSetting.SMTP_USERNAME
-	password := global.ENVSetting.SMTP_PASSWORD
-	if host == "" || port == "" || username == "" || password == "" {
-		err := fmt.Errorf("smtp config missing")
-		global.Logger.Error("Email send failed::", zap.Error(err))
+	// Lấy API key từ env
+	apiKey := global.ENVSetting.Brevo_ApiKey
+	if apiKey == "" {
+		err := fmt.Errorf("brevo api key is missing (BREVO_API_KEY)")
+		global.Logger.Error("Email send failed: Brevo API key not configured", zap.Error(err))
 		return err
 	}
 
-	contentEmail := Mail{
-		From:    EmailAddress{Address: from, Name: "Taskly"},
-		To:      to,
-		Subject: "OTP Verification",
-		Body:    fmt.Sprintf("<p>Your otp is <b>%s</b>, please enter to verify your account</p>", otp),
+	// Tạo danh sách người nhận cho Brevo
+	var recipients []BrevoRecipient
+	for _, emailAddr := range to {
+		recipients = append(recipients, BrevoRecipient{Email: emailAddr})
 	}
 
-	messageEmail := BuildMessage(contentEmail)
+	// Tạo payload
+	payload := BrevoPayload{
+		Sender: BrevoSender{
+			Name:  "Taskly", // Tên người gửi hiển thị
+			Email: from,     // Email người gửi (phải được xác thực trên Brevo)
+		},
+		To:          recipients,
+		Subject:     "Taskly - OTP Verification",
+		HtmlContent: fmt.Sprintf("<html><body><p>Your OTP is <b>%s</b>. Please use it to verify your account.</p></body></html>", otp),
+	}
 
-	// PlainAuth: username is full email, host without port
-	auth := smtp.PlainAuth("", username, password, host)
-
-	addr := fmt.Sprintf("%s:%s", host, port)
-
-	// dùng smtp.SendMail với addr (587) sẽ thực hiện STARTTLS nếu server hỗ trợ
-	if err := smtp.SendMail(addr, auth, from, to, []byte(messageEmail)); err != nil {
-		global.Logger.Error("Email send failed::", zap.Error(err))
+	payloadBytes, err := json.Marshal(payload)
+	if err != nil {
+		global.Logger.Error("Failed to marshal Brevo payload", zap.Error(err))
 		return err
 	}
 
+	// Tạo request
+	req, err := http.NewRequest("POST", "https://api.brevo.com/v3/smtp/email", bytes.NewBuffer(payloadBytes))
+	if err != nil {
+		global.Logger.Error("Failed to create Brevo request", zap.Error(err))
+		return err
+	}
+
+	// Thêm headers
+	req.Header.Set("Content-Type", "application/json")
+	req.Header.Set("api-key", apiKey)
+
+	// Gửi request
+	client := &http.Client{}
+	resp, err := client.Do(req)
+	if err != nil {
+		global.Logger.Error("Failed to send email via Brevo", zap.Error(err))
+		return err
+	}
+	defer resp.Body.Close()
+
+	// Kiểm tra response
+	if resp.StatusCode >= 300 {
+		body, _ := io.ReadAll(resp.Body)
+		err := fmt.Errorf("brevo API returned non-2xx status: %d - %s", resp.StatusCode, string(body))
+		global.Logger.Error("Brevo email send failed", zap.Error(err))
+		return err
+	}
+
+	global.Logger.Info("Email sent successfully via Brevo", zap.Strings("to", to))
 	return nil
 }

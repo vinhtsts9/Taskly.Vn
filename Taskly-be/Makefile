@@ -1,4 +1,4 @@
-GOOSE_DBSTRING ?= "postgresql://taskly_postgres_user:tE40ABIH3JZvjzMd1VZDl9Sox96amMBv@dpg-d2gb2u8dl3ps73f4bp0g-a.singapore-postgres.render.com/taskly_postgres"
+GOOSE_DBSTRING ?= "postgresql://vinhtsts99:YmCbT3klRAZ9ZvmXNRNm3LQfwfSWrhow@dpg-d4c5eeali9vc73bpqsr0-a.oregon-postgres.render.com/taskly_us9h"
 GOOSE_MIGRATION_DIR ?= sql/schema
 GOOSE_DRIVER ?= postgres
 APP_NAME = server
