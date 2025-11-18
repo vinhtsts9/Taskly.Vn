@@ -19,6 +19,7 @@ type ENV struct {
 	Vnp_UrlCallBack       string `mapstructure:"VNP_URL_CALLBACK"`
 	Vnp_IpnUrl            string `mapstructure:"VNP_IPN_URL"`
 	Redis_Url             string `mapstructure:"REDIS_URL"`
+	Brevo_ApiKey          string `mapstructure:"BREVO_APIKEY"`
 
 	// Log
 	LogLevel      string `mapstructure:"LOG_LEVEL"`
