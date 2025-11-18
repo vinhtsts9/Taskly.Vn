@@ -6,3 +6,15 @@ Taskly-be/app.env
 aTaskly-fe/*.env
 aTaskly-fe/app.env
 aTaskly-fe/node_modules/
+
+
+
+tmp/
+Taskly-be/tmp/
+Taskly-be/storages/logs/
+Taskly-be/environment/plugins/
+*.log
+*.zip
+main
+Taskly-be/main
+Taskly-be/environment/*
